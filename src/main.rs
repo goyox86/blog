@@ -41,7 +41,7 @@ fn main() {
     let conn = establish_connection();
 
     for i in 1..100 {
-        println!("Iserting post {}", i);
+        println!("Inserting post {}", i);
         create_post(&conn, &format!("Post {}", i), &format!("Post {} body", i));
     }
 
