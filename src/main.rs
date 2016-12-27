@@ -13,7 +13,6 @@ pub mod models;
 pub mod schema;
 
 use models::*;
-use schema::posts::dsl::*;
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
@@ -24,11 +23,30 @@ pub fn establish_connection() -> PgConnection {
         .expect(&format!("Error connecting to {}", database_url))
 }
 
+pub fn create_post<'a>(conn: &PgConnection, title: &'a str,  body: &'a str) {
+    use schema::posts;
+
+    let new_post = NewPost {
+        title: title,
+        body: body
+    };
+
+    diesel::insert(&new_post).into(posts::table)
+        .get_result::<Post>(conn)
+        .expect("Error saving new post");
+}
+
 fn main() {
-    let connection = establish_connection();
-    let results = posts.filter(published.eq(true))
-        .limit(5)
-        .load::<Post>(&connection)
+    use schema::posts::dsl::*;
+    let conn = establish_connection();
+
+    for i in 1..100 {
+        println!("Iserting post {}", i);
+        create_post(&conn, &format!("Post {}", i), &format!("Post {} body", i));
+    }
+
+    let results = posts.filter(published.eq(false))
+        .load::<Post>(&conn)
         .expect("Error loading posts");
 
     println!("Displaying {} posts", results.len());
