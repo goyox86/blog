@@ -4,6 +4,7 @@
 #[cfg(feature = "nightly")]
 #[macro_use] extern crate diesel_codegen;
 extern crate dotenv;
+extern crate toml;
 
 #[cfg(feature = "nightly")]
 include!("lib.in.rs");
@@ -17,12 +18,15 @@ use dotenv::dotenv;
 use std::env;
 
 use models::*;
+use config::DatabaseConfig;
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+
+    let db_config = DatabaseConfig::load().expect("Ooops");
+    let database_url = db_config.url();
+    println!("{}", database_url);
     PgConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
 }
