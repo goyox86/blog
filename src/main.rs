@@ -14,23 +14,20 @@ include!(concat!(env!("OUT_DIR"), "/lib.rs"));
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
-use dotenv::dotenv;
 use std::env;
 
 use models::*;
-use config::DatabaseConfig;
+use config::Config;
 
 pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
+    // TODO: Find a way of determining and storing the environment we are running on.
+    let env = env::var("BLOG_ENV").unwrap_or("development".to_string());
+    let config = Config::load(&env).unwrap();
+    let database_url = config.database().url();
 
-
-    let db_config = DatabaseConfig::load().expect("Ooops");
-    let database_url = db_config.url();
-    println!("{}", database_url);
     PgConnection::establish(&database_url)
         .expect(&format!("Error connecting to {}", database_url))
 }
-
 
 pub fn create_user<'a>(conn: &PgConnection, username: &'a str,  name: &'a str) -> User {
     use schema::users;

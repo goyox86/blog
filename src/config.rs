@@ -4,8 +4,10 @@ use std::io::Error as IoError;
 use std::fs::File;
 use std::fmt;
 use std::error;
+use std::env;
 
-const DEFAULT_FILE_NAME: &'static str = "database.toml";
+const CONFIG_DIR: &'static str = "./config";
+const DB_CONFIG_FILE: &'static str = "database.toml";
 
 #[derive(Debug)]
 pub enum DatabaseError {
@@ -15,7 +17,7 @@ pub enum DatabaseError {
 impl fmt::Display for DatabaseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DatabaseError::Io(_) => write!(f, "There was an error loading DB config file")
+            DatabaseError::Io(_) => write!(f, "There was an error reading DB config file")
         }
     }
 }
@@ -52,25 +54,26 @@ pub struct DatabaseConfig {
     pub pool: i64
 }
 
+//TODO: Shorten all of this to 'Db' instead of 'Database'
 impl DatabaseConfig {
-    pub fn load() -> Result<DatabaseConfig, DatabaseError> {
-        let config_file_path = format!("./config/{}", DEFAULT_FILE_NAME);
+    pub fn load(env: &str) -> Result<DatabaseConfig, DatabaseError> {
+        let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
         let mut config_file = File::open(config_file_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
 
         let toml = Parser::new(&buffer).parse().unwrap();
-        let t = toml.get("development").unwrap().as_table().unwrap();
+        let env_toml = toml.get(env).unwrap().as_table().unwrap();
 
         Ok(DatabaseConfig {
-            adapter: t.get("adapter").unwrap().to_string(),
-            encoding: t.get("encoding").unwrap().to_string(),
-            database: t.get("database").unwrap().to_string(),
-            username: t.get("username").unwrap().to_string(),
-            password: t.get("password").unwrap().to_string(),
-            host: t.get("host").unwrap().to_string(),
-            port: t.get("port").unwrap().as_integer().unwrap(),
-            pool: t.get("pool").unwrap().as_integer().unwrap(),
+            adapter: env_toml.get("adapter").unwrap().to_string(),
+            encoding: env_toml.get("encoding").unwrap().to_string(),
+            database: env_toml.get("database").unwrap().to_string(),
+            username: env_toml.get("username").unwrap().to_string(),
+            password: env_toml.get("password").unwrap().to_string(),
+            host: env_toml.get("host").unwrap().to_string(),
+            port: env_toml.get("port").unwrap().as_integer().unwrap(),
+            pool: env_toml.get("pool").unwrap().as_integer().unwrap(),
         })
     }
 
@@ -80,10 +83,32 @@ impl DatabaseConfig {
     }
 }
 
+#[derive(Debug)]
+pub enum ConfigError {
+    Db(DatabaseError)
+}
+
+#[derive(Debug)]
+pub struct Config {
+    database: DatabaseConfig
+}
+
+impl Config {
+    pub fn load(environment: &str) -> Result<Config, ConfigError> {
+        let database_config = DatabaseConfig::load(environment).unwrap();
+
+        Ok(Config {
+            database: database_config
+        })
+    }
+
+    pub fn database(&self) -> &DatabaseConfig {
+       &self.database
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
 }
 
