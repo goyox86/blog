@@ -3,6 +3,7 @@ use std::string::ToString;
 use std::default::Default;
 use std::fmt;
 
+#[derive(Debug, PartialEq)]
 pub enum Env {
     Development,
     Test,
@@ -18,7 +19,7 @@ pub enum ParseEnvError {
 impl fmt::Display for ParseEnvError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ParseEnvError::UnknownEnv =>write!(f, "Unknown environment")
+            ParseEnvError::UnknownEnv => write!(f, "Unknown environment")
         }
     }
 }
@@ -51,5 +52,23 @@ impl ToString for Env {
             Env::Staging => String::from("staging"),
             Env::Production => String::from("production"),
         }
+    }
+}
+
+impl Env {
+    fn is_development(&self) -> bool {
+        *self == Env::Development
+    }
+
+    fn is_test(&self) -> bool {
+        *self == Env::Test
+    }
+
+    fn is_staging(&self) -> bool {
+        *self == Env::Staging
+    }
+
+    fn is_prod(&self) -> bool {
+        *self == Env::Production
     }
 }
