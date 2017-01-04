@@ -3,7 +3,6 @@
 #[macro_use] extern crate diesel;
 #[cfg(feature = "nightly")]
 #[macro_use] extern crate diesel_codegen;
-extern crate dotenv;
 extern crate toml;
 
 #[cfg(feature = "nightly")]
@@ -14,14 +13,16 @@ include!(concat!(env!("OUT_DIR"), "/lib.rs"));
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
-use std::env;
+use std::env as std_env;
+use std::str::FromStr;
 
 use models::*;
 use config::Config;
+use env::Env;
 
 pub fn establish_connection() -> PgConnection {
-    // TODO: Find a way of determining and storing the environment we are running on.
-    let env = env::var("BLOG_ENV").unwrap_or("development".to_string());
+    let env_str = &std_env::var("BLOG_ENV").unwrap_or("development".to_string());
+    let env = Env::from_str(env_str).unwrap();
     let config = Config::load(&env).unwrap();
     let database_url = config.database().url();
 

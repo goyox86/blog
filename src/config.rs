@@ -4,7 +4,8 @@ use std::io::Error as IoError;
 use std::fs::File;
 use std::fmt;
 use std::error;
-use std::env;
+
+use env::Env;
 
 const CONFIG_DIR: &'static str = "./config";
 const DB_CONFIG_FILE: &'static str = "database.toml";
@@ -56,14 +57,14 @@ pub struct DatabaseConfig {
 
 //TODO: Shorten all of this to 'Db' instead of 'Database'
 impl DatabaseConfig {
-    pub fn load(env: &str) -> Result<DatabaseConfig, DatabaseError> {
+    pub fn load(env: &Env) -> Result<DatabaseConfig, DatabaseError> {
         let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
         let mut config_file = File::open(config_file_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
 
         let toml = Parser::new(&buffer).parse().unwrap();
-        let env_toml = toml.get(env).unwrap().as_table().unwrap();
+        let env_toml = toml.get(&env.to_string()).unwrap().as_table().unwrap();
 
         Ok(DatabaseConfig {
             adapter: env_toml.get("adapter").unwrap().to_string(),
@@ -94,7 +95,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load(environment: &str) -> Result<Config, ConfigError> {
+    pub fn load(environment: &Env) -> Result<Config, ConfigError> {
         let database_config = DatabaseConfig::load(environment).unwrap();
 
         Ok(Config {
