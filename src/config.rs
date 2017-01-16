@@ -52,7 +52,6 @@ pub struct DbConfig {
     pub password: String,
     pub host: String,
     pub port: i64,
-    pub pool: i64
 }
 
 //TODO: Shorten all of this to 'Db' instead of 'Database'
@@ -66,15 +65,34 @@ impl DbConfig {
         let toml = Parser::new(&buffer).parse().unwrap();
         let env_toml = toml.get(&env.to_string()).unwrap().as_table().unwrap();
 
+        let adapter = match env_toml.get("adapter") {
+            None => "postgres".to_string(),
+            Some(adapter) => adapter.to_string()
+        };
+        let encoding = match env_toml.get("encoding") {
+            None => "utf8".to_string(),
+            Some(encoding) => adapter.to_string()
+        };
+        let database = env_toml.get("database").expect("must provide a database").to_string();
+        let username = env_toml.get("username").expect("must provide a username").to_string();
+        let password = env_toml.get("password").expect("must provide a password").to_string();
+        let host = match env_toml.get("host") {
+            None => "localhost".to_string(),
+            Some(host) => host.to_string()
+        };
+        let port = match env_toml.get("port") {
+            None => 5432,
+            Some(port) => port.as_integer().expect("invalid port")
+        };
+
         Ok(DbConfig {
-            adapter: env_toml.get("adapter").unwrap().to_string(),
-            encoding: env_toml.get("encoding").unwrap().to_string(),
-            database: env_toml.get("database").unwrap().to_string(),
-            username: env_toml.get("username").unwrap().to_string(),
-            password: env_toml.get("password").unwrap().to_string(),
-            host: env_toml.get("host").unwrap().to_string(),
-            port: env_toml.get("port").unwrap().as_integer().unwrap(),
-            pool: env_toml.get("pool").unwrap().as_integer().unwrap(),
+            adapter: adapter,
+            encoding: encoding,
+            database: database,
+            username: username,
+            password: password,
+            host: host,
+            port: port,
         })
     }
 
@@ -89,6 +107,12 @@ pub enum ConfigError {
     Db(DbConfigError)
 }
 
+impl From<DbConfigError> for ConfigError {
+    fn from(err: DbConfigError) -> ConfigError {
+        ConfigError::Db(err)
+    }
+}
+
 #[derive(Debug)]
 pub struct Config {
     database: DbConfig
@@ -96,7 +120,7 @@ pub struct Config {
 
 impl Config {
     pub fn load(environment: &Env) -> Result<Config, ConfigError> {
-        let database_config = DbConfig::load(environment).unwrap();
+        let database_config = DbConfig::load(environment)?;
 
         Ok(Config {
             database: database_config
