@@ -11,40 +11,40 @@ const CONFIG_DIR: &'static str = "./config";
 const DB_CONFIG_FILE: &'static str = "database.toml";
 
 #[derive(Debug)]
-pub enum DatabaseError {
+pub enum DbConfigError {
     Io(IoError)
 }
 
-impl fmt::Display for DatabaseError {
+impl fmt::Display for DbConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DatabaseError::Io(_) => write!(f, "There was an error reading DB config file")
+            DbConfigError::Io(_) => write!(f, "There was an error reading DB config file")
         }
     }
 }
 
-impl error::Error for DatabaseError {
+impl error::Error for DbConfigError {
     fn description(&self) -> &str {
         match *self {
-            DatabaseError::Io(ref err) => err.description()
+            DbConfigError::Io(ref err) => err.description()
         }
     }
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            DatabaseError::Io(ref err) => Some(err)
+            DbConfigError::Io(ref err) => Some(err)
         }
     }
 }
 
-impl From<IoError> for DatabaseError {
-    fn from(err: IoError) -> DatabaseError {
-        DatabaseError::Io(err)
+impl From<IoError> for DbConfigError {
+    fn from(err: IoError) -> DbConfigError {
+        DbConfigError::Io(err)
     }
 }
 
 #[derive(Debug)]
-pub struct DatabaseConfig {
+pub struct DbConfig {
     pub adapter: String,
     pub encoding: String,
     pub database: String,
@@ -56,8 +56,8 @@ pub struct DatabaseConfig {
 }
 
 //TODO: Shorten all of this to 'Db' instead of 'Database'
-impl DatabaseConfig {
-    pub fn load(env: &Env) -> Result<DatabaseConfig, DatabaseError> {
+impl DbConfig {
+    pub fn load(env: &Env) -> Result<DbConfig, DbConfigError> {
         let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
         let mut config_file = File::open(config_file_path)?;
         let mut buffer = String::new();
@@ -66,7 +66,7 @@ impl DatabaseConfig {
         let toml = Parser::new(&buffer).parse().unwrap();
         let env_toml = toml.get(&env.to_string()).unwrap().as_table().unwrap();
 
-        Ok(DatabaseConfig {
+        Ok(DbConfig {
             adapter: env_toml.get("adapter").unwrap().to_string(),
             encoding: env_toml.get("encoding").unwrap().to_string(),
             database: env_toml.get("database").unwrap().to_string(),
@@ -86,24 +86,24 @@ impl DatabaseConfig {
 
 #[derive(Debug)]
 pub enum ConfigError {
-    Db(DatabaseError)
+    Db(DbConfigError)
 }
 
 #[derive(Debug)]
 pub struct Config {
-    database: DatabaseConfig
+    database: DbConfig
 }
 
 impl Config {
     pub fn load(environment: &Env) -> Result<Config, ConfigError> {
-        let database_config = DatabaseConfig::load(environment).unwrap();
+        let database_config = DbConfig::load(environment).unwrap();
 
         Ok(Config {
             database: database_config
         })
     }
 
-    pub fn database(&self) -> &DatabaseConfig {
+    pub fn database(&self) -> &DbConfig {
        &self.database
     }
 }
