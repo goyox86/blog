@@ -12,13 +12,15 @@ const DB_CONFIG_FILE: &'static str = "database.toml";
 
 #[derive(Debug)]
 pub enum DbConfigError {
-    Io(IoError)
+    Io(IoError),
+    Parsing(String)
 }
 
 impl fmt::Display for DbConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DbConfigError::Io(_) => write!(f, "There was an error reading DB config file")
+            DbConfigError::Io(_) => write!(f, "There was an error accessing the DB config file"),
+            DbConfigError::Parsing(_) => write!(f, "There was an error parsing DB config file")
         }
     }
 }
@@ -26,13 +28,15 @@ impl fmt::Display for DbConfigError {
 impl error::Error for DbConfigError {
     fn description(&self) -> &str {
         match *self {
-            DbConfigError::Io(ref err) => err.description()
+            DbConfigError::Io(ref err) => err.description(),
+            DbConfigError::Parsing(ref err) => "DB config parsing error"
         }
     }
 
     fn cause(&self) -> Option<&error::Error> {
         match *self {
-            DbConfigError::Io(ref err) => Some(err)
+            DbConfigError::Io(ref err) => Some(err),
+            DbConfigError::Parsing(_) => Some(self)
         }
     }
 }
@@ -54,7 +58,6 @@ pub struct DbConfig {
     pub port: i64,
 }
 
-//TODO: Shorten all of this to 'Db' instead of 'Database'
 impl DbConfig {
     pub fn load(env: &Env) -> Result<DbConfig, DbConfigError> {
         let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
@@ -62,7 +65,14 @@ impl DbConfig {
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
 
-        let toml = Parser::new(&buffer).parse().unwrap();
+        let mut parser = Parser::new(&buffer);
+        let toml = match parser.parse() {
+            None => {
+                let desc = parser.errors.iter().fold(String::new(), |acc, ref error| acc + &format!("{}", error));
+                return Err(DbConfigError::Parsing(format!("Parsing error {}", desc)));
+            },
+            Some(toml) => toml
+        };
         let env_toml = toml.get(&env.to_string()).unwrap().as_table().unwrap();
 
         let adapter = match env_toml.get("adapter") {
