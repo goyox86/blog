@@ -29,7 +29,7 @@ impl error::Error for DbConfigError {
     fn description(&self) -> &str {
         match *self {
             DbConfigError::Io(ref err) => err.description(),
-            DbConfigError::Parsing(ref err) => "DB config parsing error"
+            DbConfigError::Parsing(ref err) => &err
         }
     }
 
