@@ -56,9 +56,25 @@ pub struct DbConfig {
     pub password: String,
     pub host: String,
     pub port: i64,
+    url: Option<String>
 }
 
 impl DbConfig {
+    pub fn new(adapter: String, encoding: String, database: String,
+               username: String, password: String, host: String,
+               port: i64) -> DbConfig {
+            DbConfig {
+                adapter: adapter,
+                encoding: encoding,
+                database: database,
+                username: username,
+                password: password,
+                host: host,
+                port: port,
+                url: None
+        }
+    }
+
     pub fn load(env: &Env) -> Result<DbConfig, DbConfigError> {
         let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
         let mut config_file = File::open(config_file_path)?;
@@ -111,15 +127,9 @@ impl DbConfig {
             Some(port) => port.as_integer().expect("invalid port")
         };
 
-        Ok(DbConfig {
-            adapter: adapter,
-            encoding: encoding,
-            database: database,
-            username: username,
-            password: password,
-            host: host,
-            port: port,
-        })
+        Ok(Self::new(adapter, encoding,
+                     database,username,
+                     password, host, port))
     }
 
     pub fn url(&self) -> String {
