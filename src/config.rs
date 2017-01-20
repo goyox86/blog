@@ -73,7 +73,14 @@ impl DbConfig {
             },
             Some(toml) => toml
         };
-        let env_toml = toml.get(&env.to_string()).unwrap().as_table().unwrap();
+
+        let env_toml = match toml.get(&env.to_string()) {
+           None => return Err(DbConfigError::Parsing(format!("no configuration found for env '{}'", env.to_string()))),
+            Some(toml) => match toml.as_table() {
+                None => return Err(DbConfigError::Parsing(format!("configuration section for env '{}' does not have the correct format", env.to_string()))),
+                Some(toml) => toml
+            }
+        };
 
         let adapter = match env_toml.get("adapter") {
             None => "postgres".to_string(),
