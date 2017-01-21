@@ -55,14 +55,14 @@ pub struct DbConfig {
     pub username: String,
     pub password: String,
     pub host: String,
-    pub port: i64,
+    pub port: i32,
     url: Option<String>
 }
 
 impl DbConfig {
     pub fn new(adapter: String, encoding: String, database: String,
                username: String, password: String, host: String,
-               port: i64) -> DbConfig {
+               port: i32) -> DbConfig {
             DbConfig {
                 adapter: adapter,
                 encoding: encoding,
@@ -129,7 +129,7 @@ impl DbConfig {
 
         Ok(Self::new(adapter, encoding,
                      database,username,
-                     password, host, port))
+                     password, host, port as i32))
     }
 
     pub fn url(&self) -> String {
