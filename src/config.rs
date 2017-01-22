@@ -102,26 +102,32 @@ impl DbConfig {
             None => "postgres".to_string(),
             Some(adapter) => adapter.to_string()
         };
+
         let encoding = match env_toml.get("encoding") {
             None => "utf8".to_string(),
             Some(encoding) => adapter.to_string()
         };
+
         let database = match env_toml.get("database") {
             None => return Err(DbConfigError::Parsing(String::from("'database' key does not exist."))),
             Some(database) => database.to_string()
         };
+
         let username = match env_toml.get("username") {
             None => return Err(DbConfigError::Parsing(String::from("'username' key does not exist."))),
             Some(username) => username.to_string()
         };
+
         let password = match env_toml.get("password") {
             None => return Err(DbConfigError::Parsing(String::from("'password' key does not exist."))),
             Some(password) => password.to_string()
         };
+
         let host = match env_toml.get("host") {
             None => "localhost".to_string(),
             Some(host) => host.to_string()
         };
+
         let port = match env_toml.get("port") {
             None => 5432,
             Some(port) => port.as_integer().expect("invalid port")

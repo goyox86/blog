@@ -1,8 +1,10 @@
 #![cfg_attr(feature = "nightly", feature(proc_macro))]
 
-#[macro_use] extern crate diesel;
+#[macro_use]
+extern crate diesel;
 #[cfg(feature = "nightly")]
-#[macro_use] extern crate diesel_codegen;
+#[macro_use]
+extern crate diesel_codegen;
 extern crate toml;
 
 #[cfg(feature = "nightly")]
@@ -26,11 +28,10 @@ pub fn establish_connection() -> PgConnection {
     let config = Config::load(&env).unwrap();
     let database_url = config.database().url();
 
-    PgConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url))
+    PgConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url))
 }
 
-pub fn create_user<'a>(conn: &PgConnection, username: &'a str,  name: &'a str) -> User {
+pub fn create_user<'a>(conn: &PgConnection, username: &'a str, name: &'a str) -> User {
     use schema::users;
 
     let new_user = NewUser {
@@ -38,21 +39,23 @@ pub fn create_user<'a>(conn: &PgConnection, username: &'a str,  name: &'a str) -
         name: name,
     };
 
-    diesel::insert(&new_user).into(users::table)
+    diesel::insert(&new_user)
+        .into(users::table)
         .get_result::<User>(conn)
         .expect("Error saving new user")
 }
 
-pub fn create_post<'a>(conn: &PgConnection, title: &'a str,  body: &'a str, user: &User) {
+pub fn create_post<'a>(conn: &PgConnection, title: &'a str, body: &'a str, user: &User) {
     use schema::posts;
 
     let new_post = NewPost {
         title: title,
         body: body,
-        user_id: Some(user.id)
+        user_id: Some(user.id),
     };
 
-    diesel::insert(&new_post).into(posts::table)
+    diesel::insert(&new_post)
+        .into(posts::table)
         .get_result::<Post>(conn)
         .expect("Error saving new post");
 }
@@ -65,7 +68,10 @@ fn main() {
 
     for i in 1..100 {
         println!("Inserting post {}", i);
-        create_post(&conn, &format!("Post {}", i), &format!("Post {} body", i), &user);
+        create_post(&conn,
+                    &format!("Post {}", i),
+                    &format!("Post {} body", i),
+                    &user);
     }
 
     let results = posts.filter(published.eq(false))
