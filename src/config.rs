@@ -19,8 +19,8 @@ pub enum DbConfigError {
 impl fmt::Display for DbConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DbConfigError::Io(_) => write!(f, "There was an error accessing the DB config file"),
-            DbConfigError::Parsing(_) => write!(f, "There was an error parsing DB config file")
+            DbConfigError::Io(_) => write!(f, "Error accessing the DB config file"),
+            DbConfigError::Parsing(_) => write!(f, "Error parsing DB config file")
         }
     }
 }
