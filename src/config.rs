@@ -1,4 +1,5 @@
 use toml::Parser;
+
 use std::io::prelude::*;
 use std::io;
 use std::fs::File;
@@ -56,14 +57,14 @@ pub struct DbConfig {
     pub username: String,
     pub password: String,
     pub host: String,
-    pub port: i32,
+    pub port: u16,
     url: Option<String>
 }
 
 impl DbConfig {
     pub fn new(adapter: String, encoding: String, database: String,
                username: String, password: String, host: String,
-               port: i32) -> DbConfig {
+               port: u16) -> DbConfig {
         DbConfig {
             adapter: adapter,
             encoding: encoding,
@@ -136,7 +137,7 @@ impl DbConfig {
 
         Ok(Self::new(adapter, encoding,
                      database,username,
-                     password, host, port as i32))
+                     password, host, port as u16))
     }
 
     pub fn url(&self) -> String {
