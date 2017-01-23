@@ -4,6 +4,7 @@ use std::io::Error as IoError;
 use std::fs::File;
 use std::fmt;
 use std::error;
+use std::path::Path;
 
 use env::Env;
 
@@ -63,20 +64,20 @@ impl DbConfig {
     pub fn new(adapter: String, encoding: String, database: String,
                username: String, password: String, host: String,
                port: i32) -> DbConfig {
-            DbConfig {
-                adapter: adapter,
-                encoding: encoding,
-                database: database,
-                username: username,
-                password: password,
-                host: host,
-                port: port,
-                url: None
+        DbConfig {
+            adapter: adapter,
+            encoding: encoding,
+            database: database,
+            username: username,
+            password: password,
+            host: host,
+            port: port,
+            url: None
         }
     }
 
     pub fn load(env: &Env) -> Result<DbConfig, DbConfigError> {
-        let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
+        let config_file_path = Path::new(CONFIG_DIR).join(DB_CONFIG_FILE);
         let mut config_file = File::open(config_file_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
