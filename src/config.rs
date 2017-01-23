@@ -1,6 +1,6 @@
 use toml::Parser;
 use std::io::prelude::*;
-use std::io::Error as IoError;
+use std::io;
 use std::fs::File;
 use std::fmt;
 use std::error;
@@ -13,7 +13,7 @@ const DB_CONFIG_FILE: &'static str = "database.toml";
 
 #[derive(Debug)]
 pub enum DbConfigError {
-    Io(IoError),
+    Io(io::Error),
     Parsing(String)
 }
 
@@ -42,8 +42,8 @@ impl error::Error for DbConfigError {
     }
 }
 
-impl From<IoError> for DbConfigError {
-    fn from(err: IoError) -> DbConfigError {
+impl From<io::Error> for DbConfigError {
+    fn from(err: io::Error) -> DbConfigError {
         DbConfigError::Io(err)
     }
 }
