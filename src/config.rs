@@ -1,9 +1,11 @@
 use toml::Parser;
+
 use std::io::prelude::*;
-use std::io::Error as IoError;
+use std::io;
 use std::fs::File;
 use std::fmt;
 use std::error;
+use std::path::Path;
 
 use env::Env;
 
@@ -12,15 +14,15 @@ const DB_CONFIG_FILE: &'static str = "database.toml";
 
 #[derive(Debug)]
 pub enum DbConfigError {
-    Io(IoError),
+    Io(io::Error),
     Parsing(String)
 }
 
 impl fmt::Display for DbConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            DbConfigError::Io(_) => write!(f, "There was an error accessing the DB config file"),
-            DbConfigError::Parsing(_) => write!(f, "There was an error parsing DB config file")
+            DbConfigError::Io(_) => write!(f, "Error accessing the DB config file"),
+            DbConfigError::Parsing(_) => write!(f, "Error parsing DB config file")
         }
     }
 }
@@ -41,8 +43,8 @@ impl error::Error for DbConfigError {
     }
 }
 
-impl From<IoError> for DbConfigError {
-    fn from(err: IoError) -> DbConfigError {
+impl From<io::Error> for DbConfigError {
+    fn from(err: io::Error) -> DbConfigError {
         DbConfigError::Io(err)
     }
 }
@@ -55,28 +57,28 @@ pub struct DbConfig {
     pub username: String,
     pub password: String,
     pub host: String,
-    pub port: i32,
+    pub port: u16,
     url: Option<String>
 }
 
 impl DbConfig {
     pub fn new(adapter: &str, encoding: &str, database: &str,
                username: &str, password: &str, host: &str,
-               port: i32) -> DbConfig {
-            DbConfig {
-                adapter: adapter.to_owned(),
-                encoding: encoding.to_owned(),
-                database: database.to_owned(),
-                username: username.to_owned(),
-                password: password.to_owned(),
-                host: host.to_owned(),
-                port: port,
-                url: None
+               port: u16) -> DbConfig {
+        DbConfig {
+            adapter: adapter.to_owned(),
+            encoding: encoding.to_owned(),
+            database: database.to_owned(),
+            username: username.to_owned(),
+            password: password.to_owned(),
+            host: host.to_owned(),
+            port: port,
+            url: None
         }
     }
 
     pub fn load(env: &Env) -> Result<DbConfig, DbConfigError> {
-        let config_file_path = format!("{}/{}", CONFIG_DIR, DB_CONFIG_FILE);
+        let config_file_path = Path::new(CONFIG_DIR).join(DB_CONFIG_FILE);
         let mut config_file = File::open(config_file_path)?;
         let mut buffer = String::new();
         config_file.read_to_string(&mut buffer)?;
@@ -102,32 +104,38 @@ impl DbConfig {
             None => "postgres",
             Some(adapter) => adapter.as_str().expect("invalid adapter: must me a string")
         };
+
         let encoding = match env_toml.get("encoding") {
             None => "utf8",
             Some(encoding) => encoding.as_str().expect("invalid encoding: must me a string")
         };
+
         let database = match env_toml.get("database") {
             None => return Err(DbConfigError::Parsing(String::from("'database' key does not exist."))),
             Some(database) => database.as_str().expect("invalid database: must me a string")
         };
+
         let username = match env_toml.get("username") {
             None => return Err(DbConfigError::Parsing(String::from("'username' key does not exist."))),
             Some(username) => username.as_str().expect("invalid username: must me a string")
         };
+
         let password = match env_toml.get("password") {
             None => return Err(DbConfigError::Parsing(String::from("'password' key does not exist."))),
             Some(password) => password.as_str().expect("invalid password: must me a string")
         };
+
         let host = match env_toml.get("host") {
             None => "localhost",
             Some(host) => host.as_str().expect("invalid host: must me a string")
         };
+
         let port = match env_toml.get("port") {
             None => 5432,
             Some(port) => port.as_integer().expect("invalid port: must be an integer")
         };
 
-        Ok(Self::new(adapter, encoding, database, username, password, host, port as i32))
+        Ok(Self::new(adapter, encoding, database, username, password, host, port as u16))
     }
 
     pub fn url(&self) -> String {
