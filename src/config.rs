@@ -139,8 +139,7 @@ impl DbConfig {
     }
 
     pub fn url(&self) -> String {
-        // FIXME: Get rid of that replace call :/
-        format!("{}://{}:{}@{}:{}/{}", self.adapter, self.username, self.password, self.host, self.port, self.database).replace("\"", "")
+        format!("{}://{}:{}@{}:{}/{}", self.adapter, self.username, self.password, self.host, self.port, self.database)
     }
 }
 
