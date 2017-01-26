@@ -60,16 +60,16 @@ pub struct DbConfig {
 }
 
 impl DbConfig {
-    pub fn new(adapter: String, encoding: String, database: String,
-               username: String, password: String, host: String,
+    pub fn new(adapter: &str, encoding: &str, database: &str,
+               username: &str, password: &str, host: &str,
                port: i32) -> DbConfig {
             DbConfig {
-                adapter: adapter,
-                encoding: encoding,
-                database: database,
-                username: username,
-                password: password,
-                host: host,
+                adapter: adapter.to_owned(),
+                encoding: encoding.to_owned(),
+                database: database.to_owned(),
+                username: username.to_owned(),
+                password: password.to_owned(),
+                host: host.to_owned(),
                 port: port,
                 url: None
         }
@@ -99,37 +99,35 @@ impl DbConfig {
         };
 
         let adapter = match env_toml.get("adapter") {
-            None => "postgres".to_string(),
-            Some(adapter) => adapter.to_string()
+            None => "postgres",
+            Some(adapter) => adapter.as_str().expect("invalid adapter: must me a string")
         };
         let encoding = match env_toml.get("encoding") {
-            None => "utf8".to_string(),
-            Some(encoding) => adapter.to_string()
+            None => "utf8",
+            Some(encoding) => encoding.as_str().expect("invalid encoding: must me a string")
         };
         let database = match env_toml.get("database") {
             None => return Err(DbConfigError::Parsing(String::from("'database' key does not exist."))),
-            Some(database) => database.to_string()
+            Some(database) => database.as_str().expect("invalid database: must me a string")
         };
         let username = match env_toml.get("username") {
             None => return Err(DbConfigError::Parsing(String::from("'username' key does not exist."))),
-            Some(username) => username.to_string()
+            Some(username) => username.as_str().expect("invalid username: must me a string")
         };
         let password = match env_toml.get("password") {
             None => return Err(DbConfigError::Parsing(String::from("'password' key does not exist."))),
-            Some(password) => password.to_string()
+            Some(password) => password.as_str().expect("invalid password: must me a string")
         };
         let host = match env_toml.get("host") {
-            None => "localhost".to_string(),
-            Some(host) => host.to_string()
+            None => "localhost",
+            Some(host) => host.as_str().expect("invalid host: must me a string")
         };
         let port = match env_toml.get("port") {
             None => 5432,
-            Some(port) => port.as_integer().expect("invalid port")
+            Some(port) => port.as_integer().expect("invalid port: must be an integer")
         };
 
-        Ok(Self::new(adapter, encoding,
-                     database,username,
-                     password, host, port as i32))
+        Ok(Self::new(adapter, encoding, database, username, password, host, port as i32))
     }
 
     pub fn url(&self) -> String {
