@@ -57,8 +57,7 @@ pub struct DbConfig {
     pub username: String,
     pub password: String,
     pub host: String,
-    pub port: u16,
-    url: Option<String>
+    pub port: u16
 }
 
 impl DbConfig {
@@ -72,8 +71,7 @@ impl DbConfig {
             username: username.to_owned(),
             password: password.to_owned(),
             host: host.to_owned(),
-            port: port,
-            url: None
+            port: port
         }
     }
 
