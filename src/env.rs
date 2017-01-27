@@ -3,7 +3,7 @@ use std::string::ToString;
 use std::default::Default;
 use std::fmt;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Env {
     Development,
     Test,
