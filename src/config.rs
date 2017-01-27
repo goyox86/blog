@@ -49,7 +49,7 @@ impl From<io::Error> for DbConfigError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct DbConfig {
     pub adapter: String,
     pub encoding: String,
@@ -152,9 +152,9 @@ impl From<DbConfigError> for ConfigError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Config {
-    database: DbConfig
+    db: DbConfig
 }
 
 impl Config {
@@ -162,12 +162,12 @@ impl Config {
         let database_config = DbConfig::load(environment)?;
 
         Ok(Config {
-            database: database_config
+            db: database_config
         })
     }
 
-    pub fn database(&self) -> &DbConfig {
-       &self.database
+    pub fn db(&self) -> &DbConfig {
+       &self.db
     }
 }
 
