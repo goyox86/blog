@@ -10,8 +10,8 @@ use env::Env;
 use models::*;
 
 pub struct App {
-    pub env: Box<Env>,
-    pub config: Box<Config>,
+    pub env: Env,
+    pub config: Config,
     pub db_conn: Option<PgConnection>
 }
 
@@ -23,8 +23,8 @@ impl App {
         let db_url = config.db().url();
 
         App {
-            env: Box::new(env),
-            config: Box::new(config),
+            env: env,
+            config: config,
             db_conn: None
         }
     }
