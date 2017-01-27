@@ -30,8 +30,6 @@ fn main() {
 
     for i in 1..100 {
         println!("Inserting post {}", i);
-        app.create_post(&format!("Post {}", i),
-                        &format!("Post {} body", i),
-                        &user);
+        app.create_post(&format!("Post {}", i), &format!("Post {} body", i), &user);
     }
 }
