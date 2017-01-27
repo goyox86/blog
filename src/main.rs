@@ -18,13 +18,11 @@ use diesel::pg::PgConnection;
 use std::env as std_env;
 use std::str::FromStr;
 
-use models::*;
-use config::Config;
-use env::Env;
 use app::App;
 
 fn main() {
     let mut app = App::new();
+    app.start();
 
     let user = app.create_user("goyox86", "Jose Narvaez");
 
