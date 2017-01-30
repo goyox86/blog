@@ -1,6 +1,4 @@
 #![cfg_attr(feature = "nightly", feature(proc_macro))]
-#![feature(plugin)]
-#![plugin(rocket_codegen)]
 
 #[macro_use]
 extern crate diesel;
@@ -8,7 +6,6 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_codegen;
 extern crate toml;
-extern crate rocket;
 
 #[cfg(feature = "nightly")]
 include!("lib.in.rs");
@@ -21,10 +18,20 @@ use diesel::pg::PgConnection;
 use std::env as std_env;
 use std::str::FromStr;
 
+use models::*;
+use config::Config;
+use env::Env;
 use app::App;
 
 fn main() {
     let mut app = App::new();
-    app.init();
-    &app.start();
+
+    let user = app.create_user("goyox86", "Jose Narvaez");
+
+    for i in 1..100 {
+        println!("Inserting post {}", i);
+        app.create_post(&format!("Post {}", i),
+                        &format!("Post {} body", i),
+                        &user);
+    }
 }

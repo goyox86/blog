@@ -4,15 +4,19 @@ use std::str::FromStr;
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use diesel;
+use rocket::Rocket;
 
 use config::Config;
 use env::Env;
 use models::*;
+use endpoints;
 
 pub struct App {
     pub env: Env,
     pub config: Config,
-    pub db_conn: Option<PgConnection>
+    // TODO save here a diesel::Connection trait object
+    pub db_conn: Option<PgConnection>,
+    pub engine: Option<Rocket>
 }
 
 impl App {
@@ -25,13 +29,19 @@ impl App {
         App {
             env: env,
             config: config,
-            db_conn: None
+            db_conn: None,
+            engine: None
         }
     }
 
-    pub fn start(&mut self) {
+    pub fn init(&mut self) {
         let db_url = self.config.db().url();
         self.db_conn = Some(PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url)));
+        self.engine = Some(Rocket::ignite());
+    }
+
+    pub fn start(self) {
+        self.engine.unwrap().mount("/", routes![endpoints::index]).launch();
     }
 
     pub fn create_user(&self, username: &str, name: &str) -> User {
