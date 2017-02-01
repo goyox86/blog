@@ -9,7 +9,8 @@ use rocket::Rocket;
 use config::Config;
 use env::Env;
 use models::*;
-use endpoints;
+use controllers::*;
+use routes;
 
 pub struct App {
     pub env: Env,
@@ -41,35 +42,7 @@ impl App {
     }
 
     pub fn start(self) {
-        self.engine.unwrap().mount("/", routes![endpoints::index]).launch();
-    }
-
-    pub fn create_user(&self, username: &str, name: &str) -> User {
-        use schema::users;
-
-        let new_user = NewUser {
-            username: username,
-            name: name,
-        };
-
-        diesel::insert(&new_user)
-            .into(users::table)
-            .get_result::<User>(self.db_conn.as_ref().unwrap())
-            .expect("Error saving new user")
-    }
-
-    pub fn create_post(&self, title: &str, body: &str, user: &User) {
-        use schema::posts;
-
-        let new_post = NewPost {
-            title: title,
-            body: body,
-            user_id: Some(user.id),
-        };
-
-        diesel::insert(&new_post)
-            .into(posts::table)
-            .get_result::<Post>(self.db_conn.as_ref().unwrap())
-            .expect("Error saving new post");
+        let routes = routes::draw();
+        self.engine.unwrap().mount("/", routes).launch();
     }
 }

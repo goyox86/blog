@@ -1,6 +1,7 @@
 pub mod schema;
-pub mod app;
-pub mod models;
 pub mod config;
 pub mod env;
-pub mod endpoints;
+pub mod app;
+pub mod routes;
+pub mod models;
+pub mod controllers;
