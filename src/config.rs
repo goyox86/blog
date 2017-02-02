@@ -166,7 +166,7 @@ impl From<RocketConfigError> for ConfigError {
 #[derive(Debug)]
 pub struct Config {
     db: DbConfig,
-    rocket: RocketConfig
+    pub rocket: RocketConfig
 }
 
 impl Config {
@@ -175,12 +175,20 @@ impl Config {
 
         Ok(Config {
             db: database_config,
-            rocket: RocketConfig::default_for(env.to_rocket(), &format!("{}/{}", CONFIG_DIR, ROCKET_CONFIG_FILE))?
+            rocket: Self::load_rocket(env).unwrap()
         })
+    }
+
+    pub fn load_rocket(env: &Env) -> Result<RocketConfig, RocketConfigError> {
+        RocketConfig::default_for(env.to_rocket(), &format!("{}/{}", CONFIG_DIR, ROCKET_CONFIG_FILE))
     }
 
     pub fn db(&self) -> &DbConfig {
        &self.db
+    }
+
+    pub fn rocket(&self) -> &RocketConfig {
+      &self.rocket
     }
 }
 
