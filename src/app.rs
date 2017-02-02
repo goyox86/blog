@@ -3,12 +3,10 @@ use std::str::FromStr;
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
-use diesel;
 use rocket::Rocket;
 
 use config::Config;
 use env::Env;
-use models::*;
 use controllers::*;
 use routes;
 

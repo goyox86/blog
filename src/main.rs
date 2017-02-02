@@ -1,4 +1,3 @@
-#![cfg_attr(feature = "nightly", feature(proc_macro))]
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 
