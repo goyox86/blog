@@ -3,6 +3,8 @@ use std::string::ToString;
 use std::default::Default;
 use std::fmt;
 
+use rocket::config::Environment as RocketEnv;
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Env {
     Development,
@@ -55,6 +57,17 @@ impl ToString for Env {
     }
 }
 
+
+impl From<RocketEnv> for Env {
+    fn from(env: RocketEnv) -> Env {
+        match env {
+             RocketEnv::Development => Env::Development,
+             RocketEnv::Staging => Env::Staging,
+             RocketEnv::Production => Env::Production
+        }
+    }
+}
+
 impl Env {
     fn is_development(&self) -> bool {
         *self == Env::Development
@@ -70,5 +83,14 @@ impl Env {
 
     fn is_prod(&self) -> bool {
         *self == Env::Production
+    }
+
+    pub fn to_rocket(&self) -> RocketEnv {
+        match self {
+             &Env::Development => RocketEnv::Development,
+             &Env::Staging => RocketEnv::Staging,
+             &Env::Production => RocketEnv::Production,
+             &Env::Test => RocketEnv::Development
+        }
     }
 }

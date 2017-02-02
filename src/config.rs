@@ -1,4 +1,7 @@
 use toml::Parser;
+use rocket::config::ConfigError as RocketConfigError;
+use rocket::config::Config as RocketConfig;
+use rocket::config::Environment as RocketEnv;
 
 use std::io::prelude::*;
 use std::io;
@@ -11,6 +14,7 @@ use env::Env;
 
 const CONFIG_DIR: &'static str = "./config";
 const DB_CONFIG_FILE: &'static str = "database.toml";
+const ROCKET_CONFIG_FILE: &'static str = "Rocket.toml";
 
 #[derive(Debug)]
 pub enum DbConfigError {
@@ -49,7 +53,7 @@ impl From<io::Error> for DbConfigError {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct DbConfig {
     pub adapter: String,
     pub encoding: String,
@@ -143,7 +147,8 @@ impl DbConfig {
 
 #[derive(Debug)]
 pub enum ConfigError {
-    Db(DbConfigError)
+    Db(DbConfigError),
+    Rocket(RocketConfigError)
 }
 
 impl From<DbConfigError> for ConfigError {
@@ -152,17 +157,25 @@ impl From<DbConfigError> for ConfigError {
     }
 }
 
-#[derive(Clone, Debug)]
+impl From<RocketConfigError> for ConfigError {
+    fn from(err: RocketConfigError) -> ConfigError {
+        ConfigError::Rocket(err)
+    }
+}
+
+#[derive(Debug)]
 pub struct Config {
-    db: DbConfig
+    db: DbConfig,
+    rocket: RocketConfig
 }
 
 impl Config {
-    pub fn load(environment: &Env) -> Result<Config, ConfigError> {
-        let database_config = DbConfig::load(environment)?;
+    pub fn load(env: &Env) -> Result<Config, ConfigError> {
+        let database_config = DbConfig::load(env)?;
 
         Ok(Config {
-            db: database_config
+            db: database_config,
+            rocket: RocketConfig::default_for(env.to_rocket(), &format!("{}/{}", CONFIG_DIR, ROCKET_CONFIG_FILE))?
         })
     }
 
