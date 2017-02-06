@@ -1,4 +1,4 @@
-#[derive(Identifiable, Queryable, Associations)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[belongs_to(User)]
 pub struct Post {
     pub id: i32,
@@ -8,7 +8,7 @@ pub struct Post {
     pub user_id: Option<i32>
 }
 
-#[derive(Identifiable, Queryable, Associations)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[has_many(posts)]
 pub struct User {
     pub id: i32,
