@@ -3,7 +3,9 @@ use std::str::FromStr;
 
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
-use diesel;
+use r2d2::Config as R2D2Config;
+use r2d2::Pool;
+use r2d2_diesel::ConnectionManager;
 
 use config::Config;
 use env::Env;
@@ -12,7 +14,7 @@ use models::*;
 pub struct App {
     pub env: Env,
     pub config: Config,
-    pub db_conn: Option<PgConnection>
+    pub db: Option<Pool<ConnectionManager<PgConnection>>>
 }
 
 impl App {
@@ -25,41 +27,19 @@ impl App {
         App {
             env: env,
             config: config,
-            db_conn: None
+            db: None
         }
     }
 
     pub fn start(&mut self) {
         let db_url = self.config.db().url();
-        self.db_conn = Some(PgConnection::establish(&db_url).expect(&format!("Error connecting to {}", db_url)));
+        let config = R2D2Config::default();
+        let manager = ConnectionManager::<PgConnection>::new(db_url);
+        let pool = Pool::new(config, manager).expect("Failed to create DB connection pool.");
+        self.db = Some(pool);
     }
 
-    pub fn create_user(&self, username: &str, name: &str) -> User {
-        use schema::users;
-
-        let new_user = NewUser {
-            username: username,
-            name: name,
-        };
-
-        diesel::insert(&new_user)
-            .into(users::table)
-            .get_result::<User>(self.db_conn.as_ref().unwrap())
-            .expect("Error saving new user")
-    }
-
-    pub fn create_post(&self, title: &str, body: &str, user: &User) {
-        use schema::posts;
-
-        let new_post = NewPost {
-            title: title,
-            body: body,
-            user_id: Some(user.id),
-        };
-
-        diesel::insert(&new_post)
-            .into(posts::table)
-            .get_result::<Post>(self.db_conn.as_ref().unwrap())
-            .expect("Error saving new post");
+    pub fn db(&self) -> &Pool<ConnectionManager<PgConnection>> {
+       self.db.as_ref().unwrap()
     }
 }
