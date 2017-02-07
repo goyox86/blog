@@ -54,21 +54,3 @@ impl ToString for Env {
         }
     }
 }
-
-impl Env {
-    fn is_development(&self) -> bool {
-        *self == Env::Development
-    }
-
-    fn is_test(&self) -> bool {
-        *self == Env::Test
-    }
-
-    fn is_staging(&self) -> bool {
-        *self == Env::Staging
-    }
-
-    fn is_prod(&self) -> bool {
-        *self == Env::Production
-    }
-}
