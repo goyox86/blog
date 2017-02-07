@@ -45,7 +45,7 @@ fn main() {
 fn posts_index(db: State<Db>) -> JSON<Value> {
     use schema::posts::dsl::*;
 
-    let db_conn = &*db.pool().get().unwrap();
-    let results = posts.filter(published.eq(false)).load::<Post>(db_conn).expect("Error loading posts");
+    let conn = &*db.get_conn();
+    let results = posts.filter(published.eq(false)).load::<Post>(conn).expect("Error loading posts");
     JSON(json!(results))
 }

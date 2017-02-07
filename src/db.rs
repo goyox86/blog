@@ -2,6 +2,7 @@
 use diesel::pg::PgConnection;
 use r2d2::Config;
 use r2d2::Pool;
+use r2d2::PooledConnection;
 use r2d2_diesel::ConnectionManager;
 
 use config::DbConfig;
@@ -26,5 +27,10 @@ impl Db {
 
     pub fn pool(&self) -> &Pool<ConnectionManager<PgConnection>> {
        self.pool.as_ref().unwrap()
+    }
+
+    pub fn get_conn(&self) -> PooledConnection<ConnectionManager<PgConnection>> {
+        //TODO: Address this unwrap
+        self.pool().get().unwrap()
     }
 }
