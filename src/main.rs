@@ -13,32 +13,39 @@ extern crate serde_json;
 
 use diesel::prelude::*;
 use rocket::State;
-use rocket::Rocket;
 use rocket_contrib::{JSON, Value};
-
-use app::App;
-use models::Post;
+use std::env as std_env;
+use std::str::FromStr;
 
 pub mod schema;
-pub mod app;
 pub mod models;
 pub mod config;
 pub mod env;
+pub mod db;
+
+use models::Post;
+use env::Env;
+use config::DbConfig;
+use db::Db;
 
 fn main() {
-    let mut app = App::new();
-    app.start();
+    let env_str = &std_env::var("BLOG_ENV").unwrap_or(format!("development"));
+    let env = Env::from_str(env_str).unwrap();
+    let db_config = DbConfig::load(&env).expect("Error loading DB configuration");
+    let mut db = Db::new(db_config);
+    db.init();
 
     rocket::ignite()
         .mount("/", routes![posts_index])
-        .manage(app)
+        .manage(db)
         .launch()
 }
 
 #[get("/", format = "application/json")]
-fn posts_index(app: State<App>) -> JSON<Value> {
+fn posts_index(db: State<Db>) -> JSON<Value> {
     use schema::posts::dsl::*;
 
-    let results = posts.filter(published.eq(false)).load::<Post>(&*app.db().get().unwrap()).expect("Error loading posts");
+    let db_conn = &*db.pool().get().unwrap();
+    let results = posts.filter(published.eq(false)).load::<Post>(db_conn).expect("Error loading posts");
     JSON(json!(results))
 }
