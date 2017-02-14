@@ -19,17 +19,17 @@ pub struct User {
 use super::schema::posts;
 use super::schema::users;
 
-#[derive(Insertable)]
+#[derive(Insertable, Serialize, Deserialize)]
 #[table_name="posts"]
-pub struct NewPost<'a> {
-    pub title: &'a str,
-    pub body: &'a str,
+pub struct NewPost {
+    pub title: String,
+    pub body: String,
     pub user_id: Option<i32>
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Serialize, Deserialize)]
 #[table_name="users"]
-pub struct NewUser<'a> {
-    pub name: &'a str,
-    pub username: &'a str,
+pub struct NewUser {
+    pub name: String,
+    pub username: String,
 }
