@@ -1,15 +1,19 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 
-#[macro_use] extern crate diesel;
-#[macro_use] extern crate diesel_codegen;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_codegen;
 extern crate toml;
 extern crate r2d2;
 extern crate r2d2_diesel;
 extern crate rocket;
-#[macro_use] extern crate rocket_contrib;
+#[macro_use]
+extern crate rocket_contrib;
 extern crate serde_json;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 
 use std::env as std_env;
 use std::str::FromStr;
@@ -46,4 +50,3 @@ fn main() {
         .manage(db)
         .launch()
 }
-

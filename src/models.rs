@@ -5,7 +5,7 @@ pub struct Post {
     pub title: String,
     pub body: String,
     pub published: bool,
-    pub user_id: Option<i32>
+    pub user_id: Option<i32>,
 }
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
@@ -13,7 +13,7 @@ pub struct Post {
 pub struct User {
     pub id: i32,
     pub username: String,
-    pub name: String
+    pub name: String,
 }
 
 use super::schema::posts;
@@ -24,7 +24,7 @@ use super::schema::users;
 pub struct NewPost {
     pub title: String,
     pub body: String,
-    pub user_id: Option<i32>
+    pub user_id: Option<i32>,
 }
 
 #[derive(Insertable, Serialize, Deserialize)]

@@ -9,12 +9,15 @@ use config::DbConfig;
 
 pub struct Db {
     pub pool: Option<Pool<ConnectionManager<PgConnection>>>,
-    pub config: DbConfig
+    pub config: DbConfig,
 }
 
 impl Db {
     pub fn new(config: DbConfig) -> Db {
-        Db { pool: None, config: config }
+        Db {
+            pool: None,
+            config: config,
+        }
     }
 
     pub fn init(&mut self) {
@@ -26,7 +29,7 @@ impl Db {
     }
 
     pub fn pool(&self) -> &Pool<ConnectionManager<PgConnection>> {
-       self.pool.as_ref().unwrap()
+        self.pool.as_ref().unwrap()
     }
 
     pub fn get_conn(&self) -> PooledConnection<ConnectionManager<PgConnection>> {
