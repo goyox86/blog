@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::io::Cursor;
 
 use diesel::prelude::*;
@@ -46,9 +45,27 @@ fn api_v1_posts_show(post_id: i32, db: State<Db>) -> Result<JSON<Post>, diesel::
         .map_err(|err| err)
 }
 
-#[put("/posts/<post_id>", format = "application/json")]
-fn api_v1_posts_update(post_id: i32, db: State<Db>) -> JSON<Value> {
-    unimplemented!()
+#[put("/posts/<post_id>", data = "<updated_post>", format = "application/json")]
+fn api_v1_posts_update(db: State<Db>,
+                       post_id: i32,
+                       updated_post: JSON<NewPost>)
+                       -> Result<Response, diesel::result::Error> {
+    //FIXME: Remove this unwrap
+    let conn = &*db.pool().get().unwrap();
+
+    let update_result = diesel::update(posts.find(post_id))
+        .set((title.eq(&updated_post.title), body.eq(&updated_post.body)))
+        .get_result::<Post>(conn);
+
+    match update_result {
+        Ok(post) => Ok(ok_json_response(json!(post))),
+        Err(err) => {
+            match err {
+                diesel::result::Error::NotFound => Ok(not_found_json_response()),
+                _ => Err(err),
+            }
+        }
+    }
 }
 
 #[delete("/posts/<post_id>", format = "application/json")]
@@ -62,9 +79,7 @@ fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> Result<Response, diesel:
         Ok(_) => Ok(empty_response_with_status(Status::NoContent)),
         Err(err) => {
             match err {
-                diesel::result::Error::NotFound => {
-                    Ok(json_response_with_status(Status::NotFound, json!({"status": "not_found"})))
-                }
+                diesel::result::Error::NotFound => Ok(not_found_json_response()),
                 _ => Err(err),
             }
         }
@@ -81,4 +96,12 @@ fn json_response_with_status<'r>(status: Status, json: Value) -> Response<'r> {
     let mut response = empty_response_with_status(status);
     response.set_sized_body(Cursor::new(JSON(json).to_string()));
     response
+}
+
+fn not_found_json_response<'r>() -> Response<'r> {
+    json_response_with_status(Status::NotFound, json!({"status": "not_found"}))
+}
+
+fn ok_json_response<'r>(json: Value) -> Response<'r> {
+    json_response_with_status(Status::Ok, json)
 }

@@ -98,10 +98,18 @@ impl DbConfig {
         };
 
         let env_toml = match toml.get(&env.to_string()) {
-            None => return Err(DbConfigError::Parsing(format!("no configuration found for env '{}'", env.to_string()))),
+            None => {
+                return Err(DbConfigError::Parsing(format!("no configuration found for env '{}'",
+                                                          env.to_string())))
+            }
             Some(toml) => {
                 match toml.as_table() {
-                    None => return Err(DbConfigError::Parsing(format!("configuration section for env '{}' does not have the correct format", env.to_string()))),
+                    None => {
+                        return Err(DbConfigError::Parsing(format!("configuration section for \
+                                                                   env '{}' does not have the \
+                                                                   correct format",
+                                                                  env.to_string())))
+                    }
                     Some(toml) => toml,
                 }
             }
@@ -158,7 +166,13 @@ impl DbConfig {
     }
 
     pub fn url(&self) -> String {
-        format!("{}://{}:{}@{}:{}/{}", self.adapter, self.username, self.password, self.host, self.port, self.database)
+        format!("{}://{}:{}@{}:{}/{}",
+                self.adapter,
+                self.username,
+                self.password,
+                self.host,
+                self.port,
+                self.database)
     }
 }
 

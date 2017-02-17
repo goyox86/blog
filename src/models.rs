@@ -19,7 +19,7 @@ pub struct User {
 use super::schema::posts;
 use super::schema::users;
 
-#[derive(Insertable, Serialize, Deserialize)]
+#[derive(Insertable, Serialize, Deserialize, AsChangeset)]
 #[table_name="posts"]
 pub struct NewPost {
     pub title: String,

@@ -37,13 +37,11 @@ fn main() {
     let mut db = Db::new(db_config);
     db.init();
 
-    let api_v1_routes = routes![
-        api_v1::posts::api_v1_posts_index,
-        api_v1::posts::api_v1_posts_create,
-        api_v1::posts::api_v1_posts_show,
-        api_v1::posts::api_v1_posts_update,
-        api_v1::posts::api_v1_posts_destroy
-    ];
+    let api_v1_routes = routes![api_v1::posts::api_v1_posts_index,
+                                api_v1::posts::api_v1_posts_create,
+                                api_v1::posts::api_v1_posts_show,
+                                api_v1::posts::api_v1_posts_update,
+                                api_v1::posts::api_v1_posts_destroy];
 
     rocket::ignite()
         .mount("/api/v1", api_v1_routes)
