@@ -2,7 +2,9 @@ use std::io::Cursor;
 
 use diesel::prelude::*;
 use diesel;
-use rocket::{State, Request, Response, Error as RocketError};
+use diesel::result::Error as DieselError;
+
+use rocket::{State, Response};
 use rocket::http::Status;
 use rocket_contrib::{JSON, Value};
 
@@ -11,22 +13,23 @@ use models::Post;
 use models::NewPost;
 use schema::posts::dsl::*;
 use schema::posts;
+use endpoint_error::{EndpointError, EndpointResult};
 
 //FIXME: don't return diesel::result::Error on all of these babies.
 #[get("/posts", format = "application/json")]
-fn api_v1_posts_index(db: State<Db>) -> Result<JSON<Value>, diesel::result::Error> {
+fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get().unwrap();
 
     posts.filter(published.eq(false))
         .load::<Post>(conn)
         .map(|results| JSON(json!(results)))
-        .map_err(|err| err)
+        .map_err(|err| EndpointError::Db(err))
 }
 
 #[post("/posts", data = "<new_post>", format = "application/json")]
 fn api_v1_posts_create(db: State<Db>,
                        new_post: JSON<NewPost>)
-                       -> Result<JSON<Post>, diesel::result::Error> {
+                       -> EndpointResult<JSON<Post>> {
     //FIXME: Remove this unwrap
     let conn = &*db.pool().get().unwrap();
 
@@ -34,11 +37,11 @@ fn api_v1_posts_create(db: State<Db>,
         .into(posts::table)
         .get_result::<Post>(conn)
         .map(|post| JSON(post))
-        .map_err(|err| err)
+        .map_err(|err| EndpointError::Db(err))
 }
 
 #[get("/posts/<post_id>", format = "application/json")]
-fn api_v1_posts_show(post_id: i32, db: State<Db>) -> Result<Response, diesel::result::Error> {
+fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
     //FIXME: Remove this unwrap
     let conn = &*db.pool().get().unwrap();
 
@@ -46,8 +49,8 @@ fn api_v1_posts_show(post_id: i32, db: State<Db>) -> Result<Response, diesel::re
         Ok(post) => Ok(ok_json_response(json!(post))),
         Err(err) => {
             match err {
-                diesel::result::Error::NotFound => Ok(not_found_json_response()),
-                _ => Err(err),
+                DieselError::NotFound => Ok(not_found_json_response()),
+                _ => Err(EndpointError::Db(err)),
             }
         }
     }
@@ -57,7 +60,7 @@ fn api_v1_posts_show(post_id: i32, db: State<Db>) -> Result<Response, diesel::re
 fn api_v1_posts_update(db: State<Db>,
                        post_id: i32,
                        updated_post: JSON<NewPost>)
-                       -> Result<Response, diesel::result::Error> {
+                       -> EndpointResult<Response> {
     //FIXME: Remove this unwrap
     let conn = &*db.pool().get().unwrap();
 
@@ -69,15 +72,15 @@ fn api_v1_posts_update(db: State<Db>,
         Ok(post) => Ok(ok_json_response(json!(post))),
         Err(err) => {
             match err {
-                diesel::result::Error::NotFound => Ok(not_found_json_response()),
-                _ => Err(err),
+            DieselError::NotFound => Ok(not_found_json_response()),
+                _ => Err(EndpointError::Db(err)),
             }
         }
     }
 }
 
 #[delete("/posts/<post_id>", format = "application/json")]
-fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> Result<Response, diesel::result::Error> {
+fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
     //FIXME: Remove this unwrap
     let conn = &*db.pool().get().unwrap();
 
@@ -87,8 +90,8 @@ fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> Result<Response, diesel:
         Ok(_) => Ok(empty_response_with_status(Status::NoContent)),
         Err(err) => {
             match err {
-                diesel::result::Error::NotFound => Ok(not_found_json_response()),
-                _ => Err(err),
+                DieselError::NotFound => Ok(not_found_json_response()),
+                _ => Err(EndpointError::Db(err)),
             }
         }
     }

@@ -25,6 +25,8 @@ pub mod config;
 pub mod env;
 pub mod db;
 
+mod endpoint_error;
+
 use env::Env;
 use config::DbConfig;
 use db::Db;
