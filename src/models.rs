@@ -1,35 +1,35 @@
-#[derive(Identifiable, Queryable, Associations)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[belongs_to(User)]
 pub struct Post {
     pub id: i32,
     pub title: String,
     pub body: String,
     pub published: bool,
-    pub user_id: Option<i32>
+    pub user_id: Option<i32>,
 }
 
-#[derive(Identifiable, Queryable, Associations)]
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[has_many(posts)]
 pub struct User {
     pub id: i32,
     pub username: String,
-    pub name: String
+    pub name: String,
+}
+
+#[derive(Insertable, Serialize, Deserialize, AsChangeset)]
+#[table_name="posts"]
+pub struct NewPost {
+    pub title: String,
+    pub body: String,
+    pub user_id: Option<i32>,
+}
+
+#[derive(Insertable, Serialize, Deserialize)]
+#[table_name="users"]
+pub struct NewUser {
+    pub name: String,
+    pub username: String,
 }
 
 use super::schema::posts;
 use super::schema::users;
-
-#[derive(Insertable)]
-#[table_name="posts"]
-pub struct NewPost<'a> {
-    pub title: &'a str,
-    pub body: &'a str,
-    pub user_id: Option<i32>
-}
-
-#[derive(Insertable)]
-#[table_name="users"]
-pub struct NewUser<'a> {
-    pub name: &'a str,
-    pub username: &'a str,
-}
