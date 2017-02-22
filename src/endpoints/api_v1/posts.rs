@@ -12,12 +12,15 @@ use models::NewPost;
 use schema::posts::dsl::*;
 use schema::posts;
 
+//FIXME: don't return diesel::result::Error on all of these babies.
 #[get("/posts", format = "application/json")]
-fn api_v1_posts_index(db: State<Db>) -> JSON<Value> {
+fn api_v1_posts_index(db: State<Db>) -> Result<JSON<Value>, diesel::result::Error> {
     let conn = &*db.pool().get().unwrap();
-    let results =
-        posts.filter(published.eq(false)).load::<Post>(conn).expect("Error loading posts");
-    JSON(json!(results))
+
+    posts.filter(published.eq(false))
+        .load::<Post>(conn)
+        .map(|results| JSON(json!(results)))
+        .map_err(|err| err)
 }
 
 #[post("/posts", data = "<new_post>", format = "application/json")]
@@ -35,14 +38,19 @@ fn api_v1_posts_create(db: State<Db>,
 }
 
 #[get("/posts/<post_id>", format = "application/json")]
-fn api_v1_posts_show(post_id: i32, db: State<Db>) -> Result<JSON<Post>, diesel::result::Error> {
+fn api_v1_posts_show(post_id: i32, db: State<Db>) -> Result<Response, diesel::result::Error> {
     //FIXME: Remove this unwrap
     let conn = &*db.pool().get().unwrap();
 
-    posts.find(post_id)
-        .first(conn)
-        .map(|post| JSON(post))
-        .map_err(|err| err)
+    match posts.find(post_id).first::<Post>(conn) {
+        Ok(post) => Ok(ok_json_response(json!(post))),
+        Err(err) => {
+            match err {
+                diesel::result::Error::NotFound => Ok(not_found_json_response()),
+                _ => Err(err),
+            }
+        }
+    }
 }
 
 #[put("/posts/<post_id>", data = "<updated_post>", format = "application/json")]
