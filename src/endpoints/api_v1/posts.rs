@@ -78,8 +78,6 @@ fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response>
     let conn = &*db.pool().get()?;
 
     match diesel::delete(posts.find(post_id)).get_result::<Post>(conn) {
-        // TODO check why when I do Ok(json_response_with_status(Status::NoContent, json!({"status": "not_content"})))
-        // it fails miserably
         Ok(_) => Ok(empty_response_with_status(Status::NoContent)),
         Err(err) => {
             match err {
