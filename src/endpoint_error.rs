@@ -1,5 +1,5 @@
-use std::error::Error;
 use std::fmt;
+use std::error;
 
 use diesel::result::Error as DieselError;
 use r2d2::GetTimeout;
@@ -21,7 +21,7 @@ impl fmt::Display for EndpointError {
     }
 }
 
-impl Error for EndpointError {
+impl error::Error for EndpointError {
     fn description(&self) -> &str {
         match *self {
             EndpointError::Db(ref err) => err.description(),
@@ -29,7 +29,7 @@ impl Error for EndpointError {
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&error::Error> {
         match *self {
             EndpointError::Db(ref err) => Some(err),
             EndpointError::DbPool(ref err) => Some(err),
