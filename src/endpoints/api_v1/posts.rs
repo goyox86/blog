@@ -26,9 +26,7 @@ fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 }
 
 #[post("/posts", data = "<new_post>", format = "application/json")]
-fn api_v1_posts_create(db: State<Db>,
-                       new_post: JSON<NewPost>)
-                       -> EndpointResult<JSON<Post>> {
+fn api_v1_posts_create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
     diesel::insert(&new_post.0)
@@ -68,7 +66,7 @@ fn api_v1_posts_update(db: State<Db>,
         Ok(post) => Ok(ok_json_response(json!(post))),
         Err(err) => {
             match err {
-            DieselError::NotFound => Ok(not_found_json_response()),
+                DieselError::NotFound => Ok(not_found_json_response()),
                 _ => Err(EndpointError::from(err)),
             }
         }

@@ -15,7 +15,7 @@ use r2d2::GetTimeout;
 pub enum DbError {
     Db(DieselError),
     PoolInitialization(InitializationError),
-    PoolTimeout(GetTimeout)
+    PoolTimeout(GetTimeout),
 }
 
 impl fmt::Display for DbError {
