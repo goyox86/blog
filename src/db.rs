@@ -2,7 +2,6 @@
 use diesel::pg::PgConnection;
 use r2d2::Config;
 use r2d2::Pool;
-use r2d2::PooledConnection;
 use r2d2_diesel::ConnectionManager;
 
 use config::DbConfig;
