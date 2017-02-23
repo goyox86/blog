@@ -18,12 +18,12 @@ extern crate serde_derive;
 use std::env as std_env;
 use std::str::FromStr;
 
-pub mod schema;
-pub mod models;
-pub mod endpoints;
-pub mod config;
-pub mod env;
-pub mod db;
+mod schema;
+mod models;
+mod endpoints;
+mod config;
+mod env;
+mod db;
 
 mod endpoint_error;
 
@@ -39,6 +39,7 @@ fn main() {
     let mut db = Db::new(db_config);
     db.init();
 
+    //TODO: Create the routes here when 'mount' gets fixed in rocket
     //let api_v1_routes = routes![api_v1::posts::api_v1_posts_index,
     //                            api_v1::posts::api_v1_posts_create,
     //                           api_v1::posts::api_v1_posts_show,
