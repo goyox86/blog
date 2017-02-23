@@ -22,7 +22,7 @@ fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     posts.filter(published.eq(false))
         .load::<Post>(conn)
         .map(|results| JSON(json!(results)))
-        .map_err(|err| EndpointError::Db(err))
+        .map_err(|err| EndpointError::from(err))
 }
 
 #[post("/posts", data = "<new_post>", format = "application/json")]
@@ -35,7 +35,7 @@ fn api_v1_posts_create(db: State<Db>,
         .into(posts::table)
         .get_result::<Post>(conn)
         .map(|post| JSON(post))
-        .map_err(|err| EndpointError::Db(err))
+        .map_err(|err| EndpointError::from(err))
 }
 
 #[get("/posts/<post_id>", format = "application/json")]
@@ -47,7 +47,7 @@ fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
         Err(err) => {
             match err {
                 DieselError::NotFound => Ok(not_found_json_response()),
-                _ => Err(EndpointError::Db(err)),
+                _ => Err(EndpointError::from(err)),
             }
         }
     }
@@ -69,7 +69,7 @@ fn api_v1_posts_update(db: State<Db>,
         Err(err) => {
             match err {
             DieselError::NotFound => Ok(not_found_json_response()),
-                _ => Err(EndpointError::Db(err)),
+                _ => Err(EndpointError::from(err)),
             }
         }
     }
@@ -86,7 +86,7 @@ fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response>
         Err(err) => {
             match err {
                 DieselError::NotFound => Ok(not_found_json_response()),
-                _ => Err(EndpointError::Db(err)),
+                _ => Err(EndpointError::from(err)),
             }
         }
     }

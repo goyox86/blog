@@ -37,7 +37,6 @@ fn main() {
     let env = Env::from_str(env_str).unwrap();
     let db_config = DbConfig::load(&env).expect("Error loading DB configuration");
     let mut db = Db::new(db_config);
-    db.init();
 
     //TODO: Create the routes here when 'mount' gets fixed in rocket
     //let api_v1_routes = routes![api_v1::posts::api_v1_posts_index,
@@ -46,13 +45,16 @@ fn main() {
     //                            api_v1::posts::api_v1_posts_update,
     //                            api_v1::posts::api_v1_posts_destroy];
 
-    rocket::ignite()
-        .mount("/api/v1", routes![
-            api_v1::posts::api_v1_posts_index,
-            api_v1::posts::api_v1_posts_create,
-            api_v1::posts::api_v1_posts_show,
-            api_v1::posts::api_v1_posts_update,
-            api_v1::posts::api_v1_posts_destroy
-        ]).manage(db)
-        .launch()
+    match db.init() {
+        Ok(_) => {
+            rocket::ignite().mount("/api/v1", routes![
+                api_v1::posts::api_v1_posts_index,
+                api_v1::posts::api_v1_posts_create,
+                api_v1::posts::api_v1_posts_show,
+                api_v1::posts::api_v1_posts_update,
+                api_v1::posts::api_v1_posts_destroy
+            ]).manage(db).launch()
+        },
+        Err(err) => println!("Db initialization error: {}", err)
+    };
 }
