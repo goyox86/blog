@@ -18,7 +18,7 @@ use endpoint_error::{EndpointError, EndpointResult};
 //FIXME: don't return diesel::result::Error on all of these babies.
 #[get("/posts", format = "application/json")]
 fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
-    let conn = &*db.pool().get().unwrap();
+    let conn = &*db.pool().get()?;
 
     posts.filter(published.eq(false))
         .load::<Post>(conn)
@@ -30,8 +30,7 @@ fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 fn api_v1_posts_create(db: State<Db>,
                        new_post: JSON<NewPost>)
                        -> EndpointResult<JSON<Post>> {
-    //FIXME: Remove this unwrap
-    let conn = &*db.pool().get().unwrap();
+    let conn = &*db.pool().get()?;
 
     diesel::insert(&new_post.0)
         .into(posts::table)
@@ -42,8 +41,7 @@ fn api_v1_posts_create(db: State<Db>,
 
 #[get("/posts/<post_id>", format = "application/json")]
 fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
-    //FIXME: Remove this unwrap
-    let conn = &*db.pool().get().unwrap();
+    let conn = &*db.pool().get()?;
 
     match posts.find(post_id).first::<Post>(conn) {
         Ok(post) => Ok(ok_json_response(json!(post))),
@@ -61,8 +59,7 @@ fn api_v1_posts_update(db: State<Db>,
                        post_id: i32,
                        updated_post: JSON<NewPost>)
                        -> EndpointResult<Response> {
-    //FIXME: Remove this unwrap
-    let conn = &*db.pool().get().unwrap();
+    let conn = &*db.pool().get()?;
 
     let update_result = diesel::update(posts.find(post_id))
         .set((title.eq(&updated_post.title), body.eq(&updated_post.body)))
@@ -81,8 +78,7 @@ fn api_v1_posts_update(db: State<Db>,
 
 #[delete("/posts/<post_id>", format = "application/json")]
 fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
-    //FIXME: Remove this unwrap
-    let conn = &*db.pool().get().unwrap();
+    let conn = &*db.pool().get()?;
 
     match diesel::delete(posts.find(post_id)).get_result::<Post>(conn) {
         // TODO check why when I do Ok(json_response_with_status(Status::NoContent, json!({"status": "not_content"})))
