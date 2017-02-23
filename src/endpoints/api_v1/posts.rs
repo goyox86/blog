@@ -15,7 +15,6 @@ use schema::posts::dsl::*;
 use schema::posts;
 use endpoint_error::{EndpointError, EndpointResult};
 
-//FIXME: don't return diesel::result::Error on all of these babies.
 #[get("/posts", format = "application/json")]
 fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
