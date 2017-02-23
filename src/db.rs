@@ -28,6 +28,6 @@ impl Db {
     }
 
     pub fn pool(&self) -> &Pool<ConnectionManager<PgConnection>> {
-        self.pool.as_ref().unwrap()
+        self.pool.as_ref().expect("Db Pool not available. Cannot continue. Exiting...")
     }
 }
