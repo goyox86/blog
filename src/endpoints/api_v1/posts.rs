@@ -40,52 +40,46 @@ fn api_v1_posts_create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult
 fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    match posts.find(post_id).first::<Post>(conn) {
-        Ok(post) => Ok(ok_json_response(json!(post))),
-        Err(err) => {
+    posts.find(post_id).first::<Post>(conn)
+        .and_then(|post| Ok(ok_json_response(json!(post))))
+        .or_else(|err| {
             match err {
                 DieselError::NotFound => Ok(not_found_json_response()),
                 _ => Err(EndpointError::from(err)),
             }
-        }
-    }
+        })
 }
 
 #[put("/posts/<post_id>", data = "<updated_post>", format = "application/json")]
-fn api_v1_posts_update(db: State<Db>,
-                       post_id: i32,
-                       updated_post: JSON<NewPost>)
-                       -> EndpointResult<Response> {
+fn api_v1_posts_update(db: State<Db>, post_id: i32, updated_post: JSON<NewPost>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    let update_result = diesel::update(posts.find(post_id))
+    diesel::update(posts.find(post_id))
         .set((title.eq(&updated_post.title), body.eq(&updated_post.body)))
-        .get_result::<Post>(conn);
-
-    match update_result {
-        Ok(post) => Ok(ok_json_response(json!(post))),
-        Err(err) => {
+        .get_result::<Post>(conn)
+        .and_then(|post| Ok(ok_json_response(json!(post))))
+        .or_else(|err| {
             match err {
                 DieselError::NotFound => Ok(not_found_json_response()),
                 _ => Err(EndpointError::from(err)),
             }
-        }
-    }
+        })
+
 }
 
 #[delete("/posts/<post_id>", format = "application/json")]
 fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    match diesel::delete(posts.find(post_id)).get_result::<Post>(conn) {
-        Ok(_) => Ok(empty_response_with_status(Status::NoContent)),
-        Err(err) => {
+    diesel::delete(posts.find(post_id))
+        .get_result::<Post>(conn)
+        .and_then(|_| Ok(empty_response_with_status(Status::NoContent)))
+        .or_else(|err| {
             match err {
                 DieselError::NotFound => Ok(not_found_json_response()),
                 _ => Err(EndpointError::from(err)),
             }
-        }
-    }
+        })
 }
 
 fn empty_response_with_status<'r>(status: Status) -> Response<'r> {
