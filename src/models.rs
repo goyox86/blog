@@ -8,14 +8,6 @@ pub struct Post {
     pub user_id: Option<i32>,
 }
 
-#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
-#[has_many(posts)]
-pub struct User {
-    pub id: i32,
-    pub username: String,
-    pub name: String,
-}
-
 #[derive(Insertable, Serialize, Deserialize, AsChangeset)]
 #[table_name="posts"]
 pub struct NewPost {
@@ -24,11 +16,37 @@ pub struct NewPost {
     pub user_id: Option<i32>,
 }
 
+#[derive(Serialize, Deserialize, AsChangeset)]
+#[table_name="posts"]
+pub struct UpdatedPost {
+    pub title: String,
+    pub body: String,
+}
+
+#[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
+#[has_many(posts)]
+pub struct User {
+    pub id: i32,
+    pub name: String,
+    pub username: String,
+    pub email: String,
+
+}
+
 #[derive(Insertable, Serialize, Deserialize)]
 #[table_name="users"]
 pub struct NewUser {
     pub name: String,
     pub username: String,
+    pub email: String
+}
+
+#[derive(Serialize, Deserialize, AsChangeset)]
+#[table_name="users"]
+pub struct UpdatedUser {
+    pub name: String,
+    pub username: String,
+    pub email: String
 }
 
 use super::schema::posts;

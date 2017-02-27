@@ -1,0 +1,85 @@
+use diesel::prelude::*;
+use diesel;
+use diesel::result::Error as DieselError;
+
+use rocket::{State, Response};
+use rocket::http::Status;
+use rocket_contrib::{JSON, Value};
+
+use db::Db;
+use models::User;
+use models::NewUser;
+use models::UpdatedUser;
+use schema::users::dsl::*;
+use schema::users;
+use endpoint_error::{EndpointError, EndpointResult};
+use endpoints::helpers::*;
+
+#[get("/users", format = "application/json")]
+fn api_v1_users_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
+    let conn = &*db.pool().get()?;
+
+    users.load::<User>(conn)
+        .map(|results| JSON(json!(results)))
+        .map_err(|err| EndpointError::from(err))
+}
+
+#[post("/users", data = "<new_user>", format = "application/json")]
+fn api_v1_users_create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
+    let conn = &*db.pool().get()?;
+
+    diesel::insert(&new_user.0)
+        .into(users::table)
+        .get_result::<User>(conn)
+        .map(|user| JSON(user))
+        .map_err(|err| EndpointError::from(err))
+}
+
+#[get("/users/<user_id>", format = "application/json")]
+fn api_v1_users_show(user_id: i32, db: State<Db>) -> EndpointResult<Response> {
+    let conn = &*db.pool().get()?;
+
+    users.find(user_id).first::<User>(conn)
+        .and_then(|user| Ok(ok_json_response(json!(user))))
+        .or_else(|err| {
+            match err {
+                DieselError::NotFound => Ok(not_found_json_response()),
+                _ => Err(EndpointError::from(err)),
+            }
+        })
+}
+
+// FIXME: This should behave like a Rails update only update the fields passed in the payload.
+#[put("/users/<user_id>", data = "<updated_user>", format = "application/json")]
+fn api_v1_users_update(db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<Response> {
+    let conn = &*db.pool().get()?;
+
+    diesel::update(users.find(user_id))
+        .set((name.eq(&updated_user.name),
+             username.eq(&updated_user.username)))
+        .get_result::<User>(conn)
+        .and_then(|user| Ok(ok_json_response(json!(user))))
+        .or_else(|err| {
+            match err {
+                DieselError::NotFound => Ok(not_found_json_response()),
+                _ => Err(EndpointError::from(err)),
+            }
+        })
+
+}
+
+#[delete("/users/<user_id>", format = "application/json")]
+fn api_v1_users_destroy(user_id: i32, db: State<Db>) -> EndpointResult<Response> {
+    let conn = &*db.pool().get()?;
+
+    diesel::delete(users.find(user_id))
+        .get_result::<User>(conn)
+        .and_then(|_| Ok(empty_response_with_status(Status::NoContent)))
+        .or_else(|err| {
+            match err {
+                DieselError::NotFound => Ok(not_found_json_response()),
+                _ => Err(EndpointError::from(err)),
+            }
+        })
+}
+
