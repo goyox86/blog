@@ -1,5 +1,3 @@
-use std::io::Cursor;
-
 use diesel::prelude::*;
 use diesel;
 use diesel::result::Error as DieselError;
@@ -11,9 +9,11 @@ use rocket_contrib::{JSON, Value};
 use db::Db;
 use models::Post;
 use models::NewPost;
+use models::UpdatedPost;
 use schema::posts::dsl::*;
 use schema::posts;
 use endpoint_error::{EndpointError, EndpointResult};
+use endpoints::helpers::*;
 
 #[get("/posts", format = "application/json")]
 fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
@@ -51,11 +51,12 @@ fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
 }
 
 #[put("/posts/<post_id>", data = "<updated_post>", format = "application/json")]
-fn api_v1_posts_update(db: State<Db>, post_id: i32, updated_post: JSON<NewPost>) -> EndpointResult<Response> {
+fn api_v1_posts_update(db: State<Db>, post_id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
     diesel::update(posts.find(post_id))
-        .set((title.eq(&updated_post.title), body.eq(&updated_post.body)))
+        .set((title.eq(&updated_post.title),
+              body.eq(&updated_post.body)))
         .get_result::<Post>(conn)
         .and_then(|post| Ok(ok_json_response(json!(post))))
         .or_else(|err| {
@@ -82,22 +83,3 @@ fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response>
         })
 }
 
-fn empty_response_with_status<'r>(status: Status) -> Response<'r> {
-    let mut response = Response::new();
-    response.set_status(status);
-    response
-}
-
-fn json_response_with_status<'r>(status: Status, json: Value) -> Response<'r> {
-    let mut response = empty_response_with_status(status);
-    response.set_sized_body(Cursor::new(JSON(json).to_string()));
-    response
-}
-
-fn not_found_json_response<'r>() -> Response<'r> {
-    json_response_with_status(Status::NotFound, json!({"status": "not_found"}))
-}
-
-fn ok_json_response<'r>(json: Value) -> Response<'r> {
-    json_response_with_status(Status::Ok, json)
-}

@@ -13,5 +13,6 @@ table! {
         id -> Integer,
         username -> VarChar,
         name -> VarChar,
+        email -> VarChar,
     }
 }
