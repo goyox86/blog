@@ -10,8 +10,12 @@ use db::Db;
 use models::Post;
 use models::NewPost;
 use models::UpdatedPost;
+use models::User;
 use schema::posts::dsl::*;
 use schema::posts;
+use schema::users::dsl::*;
+use schema::users;
+
 use endpoint_error::{EndpointError, EndpointResult};
 use endpoints::helpers::*;
 
@@ -36,11 +40,11 @@ fn api_v1_posts_create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult
         .map_err(|err| EndpointError::from(err))
 }
 
-#[get("/posts/<post_id>", format = "application/json")]
-fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
+#[get("/posts/<id>", format = "application/json")]
+fn api_v1_posts_show(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    posts.find(post_id).first::<Post>(conn)
+    posts.find(id).first::<Post>(conn)
         .and_then(|post| Ok(ok_json_response(json!(post))))
         .or_else(|err| {
             match err {
@@ -50,11 +54,11 @@ fn api_v1_posts_show(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
         })
 }
 
-#[put("/posts/<post_id>", data = "<updated_post>", format = "application/json")]
-fn api_v1_posts_update(db: State<Db>, post_id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<Response> {
+#[put("/posts/<id>", data = "<updated_post>", format = "application/json")]
+fn api_v1_posts_update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    diesel::update(posts.find(post_id))
+    diesel::update(posts.find(id))
         .set(&updated_post.0)
         .get_result::<Post>(conn)
         .and_then(|post| Ok(ok_json_response(json!(post))))
@@ -67,11 +71,11 @@ fn api_v1_posts_update(db: State<Db>, post_id: i32, updated_post: JSON<UpdatedPo
 
 }
 
-#[delete("/posts/<post_id>", format = "application/json")]
-fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response> {
+#[delete("/posts/<id>", format = "application/json")]
+fn api_v1_posts_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    diesel::delete(posts.find(post_id))
+    diesel::delete(posts.find(id))
         .get_result::<Post>(conn)
         .and_then(|_| Ok(empty_response_with_status(Status::NoContent)))
         .or_else(|err| {
@@ -80,5 +84,21 @@ fn api_v1_posts_destroy(post_id: i32, db: State<Db>) -> EndpointResult<Response>
                 _ => Err(EndpointError::from(err)),
             }
         })
+}
+
+#[get("/users/<id>/posts", format = "application/json")]
+fn api_v1_users_posts_index(id: i32, db: State<Db>) -> EndpointResult<Response> {
+    let conn = &*db.pool().get()?;
+
+    users.find(id).first::<User>(conn)
+    .and_then(|user| {
+        let results = Post::belonging_to(&user).load::<Post>(conn)?;
+        Ok(ok_json_response(json!(results)))
+    }).or_else(|err| {
+        match err {
+            DieselError::NotFound => Ok(not_found_json_response()),
+            _ => Err(EndpointError::from(err)),
+        }
+    })
 }
 
