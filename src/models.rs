@@ -8,7 +8,7 @@ pub struct Post {
     pub user_id: Option<i32>,
 }
 
-#[derive(Insertable, Serialize, Deserialize, AsChangeset)]
+#[derive(Insertable, Serialize, Deserialize)]
 #[table_name="posts"]
 pub struct NewPost {
     pub title: String,
@@ -19,8 +19,8 @@ pub struct NewPost {
 #[derive(Serialize, Deserialize, AsChangeset)]
 #[table_name="posts"]
 pub struct UpdatedPost {
-    pub title: String,
-    pub body: String,
+    pub title: Option<String>,
+    pub body: Option<String>,
 }
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
@@ -44,9 +44,9 @@ pub struct NewUser {
 #[derive(Serialize, Deserialize, AsChangeset)]
 #[table_name="users"]
 pub struct UpdatedUser {
-    pub name: String,
-    pub username: String,
-    pub email: String
+    pub name: Option<String>,
+    pub username: Option<String>,
+    pub email: Option<String>
 }
 
 use super::schema::posts;

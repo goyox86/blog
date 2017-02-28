@@ -55,8 +55,7 @@ fn api_v1_posts_update(db: State<Db>, post_id: i32, updated_post: JSON<UpdatedPo
     let conn = &*db.pool().get()?;
 
     diesel::update(posts.find(post_id))
-        .set((title.eq(&updated_post.title),
-              body.eq(&updated_post.body)))
+        .set(&updated_post.0)
         .get_result::<Post>(conn)
         .and_then(|post| Ok(ok_json_response(json!(post))))
         .or_else(|err| {
