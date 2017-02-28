@@ -55,8 +55,7 @@ fn api_v1_users_update(db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUs
     let conn = &*db.pool().get()?;
 
     diesel::update(users.find(user_id))
-        .set((name.eq(&updated_user.name),
-             username.eq(&updated_user.username)))
+        .set(&updated_user.0)
         .get_result::<User>(conn)
         .and_then(|user| Ok(ok_json_response(json!(user))))
         .or_else(|err| {
