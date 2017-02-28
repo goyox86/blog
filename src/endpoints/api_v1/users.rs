@@ -10,8 +10,11 @@ use db::Db;
 use models::User;
 use models::NewUser;
 use models::UpdatedUser;
+use schema::posts::dsl::*;
+use schema::posts;
 use schema::users::dsl::*;
 use schema::users;
+
 use endpoint_error::{EndpointError, EndpointResult};
 use endpoints::helpers::*;
 
@@ -35,11 +38,11 @@ fn api_v1_users_create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult
         .map_err(|err| EndpointError::from(err))
 }
 
-#[get("/users/<user_id>", format = "application/json")]
-fn api_v1_users_show(user_id: i32, db: State<Db>) -> EndpointResult<Response> {
+#[get("/users/<id>", format = "application/json")]
+fn api_v1_users_show(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    users.find(user_id).first::<User>(conn)
+    users.find(id).first::<User>(conn)
         .and_then(|user| Ok(ok_json_response(json!(user))))
         .or_else(|err| {
             match err {
@@ -50,11 +53,11 @@ fn api_v1_users_show(user_id: i32, db: State<Db>) -> EndpointResult<Response> {
 }
 
 // FIXME: This should behave like a Rails update only update the fields passed in the payload.
-#[put("/users/<user_id>", data = "<updated_user>", format = "application/json")]
-fn api_v1_users_update(db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<Response> {
+#[put("/users/<id>", data = "<updated_user>", format = "application/json")]
+fn api_v1_users_update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    diesel::update(users.find(user_id))
+    diesel::update(users.find(id))
         .set(&updated_user.0)
         .get_result::<User>(conn)
         .and_then(|user| Ok(ok_json_response(json!(user))))
@@ -67,11 +70,11 @@ fn api_v1_users_update(db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUs
 
 }
 
-#[delete("/users/<user_id>", format = "application/json")]
-fn api_v1_users_destroy(user_id: i32, db: State<Db>) -> EndpointResult<Response> {
+#[delete("/users/<id>", format = "application/json")]
+fn api_v1_users_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    diesel::delete(users.find(user_id))
+    diesel::delete(users.find(id))
         .get_result::<User>(conn)
         .and_then(|_| Ok(empty_response_with_status(Status::NoContent)))
         .or_else(|err| {
