@@ -60,7 +60,7 @@ fn api_v1_users_update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) 
 fn api_v1_users_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    diesel::delete(users.find(id)).execute(conn)?;
+    diesel::delete(users.find(id)).get_result::<User>(conn)?;
 
     Ok(empty_response_with_status(Status::NoContent))
 }

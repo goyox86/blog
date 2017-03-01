@@ -51,7 +51,12 @@ fn main() {
                 api_v1::users::api_v1_users_create,
                 api_v1::users::api_v1_users_show,
                 api_v1::users::api_v1_users_update,
-                api_v1::users::api_v1_users_destroy
+                api_v1::users::api_v1_users_destroy,
+                api_v1::comments::api_v1_comments_index,
+                api_v1::comments::api_v1_comments_create,
+                api_v1::comments::api_v1_comments_show,
+                api_v1::comments::api_v1_comments_update,
+                api_v1::comments::api_v1_comments_destroy
             ]).manage(db).launch()
         },
         Err(err) => println!("Db initialization error: {}", err)
