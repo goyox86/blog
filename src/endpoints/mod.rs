@@ -1,7 +1,7 @@
 
 pub mod api_v1;
 
-mod helpers {
+pub mod helpers {
     use rocket::http::Status;
     use rocket::Response;
     use rocket_contrib::{JSON, Value};
@@ -21,6 +21,11 @@ mod helpers {
 
     pub fn not_found_json_response<'r>() -> Response<'r> {
         json_response_with_status(Status::NotFound, json!({"status": "not_found"}))
+    }
+
+    pub fn ise_json_response<'r>() -> Response<'r> {
+        json_response_with_status(Status::InternalServerError,
+                                  json!({"status": "an internal error has occured"}))
     }
 
     pub fn ok_json_response<'r>(json: Value) -> Response<'r> {
