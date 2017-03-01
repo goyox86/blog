@@ -4,7 +4,11 @@ use std::error;
 use diesel::result::Error as DieselError;
 use r2d2::{GetTimeout, InitializationError};
 
+use rocket::response;
+use rocket::response::Responder;
+
 use db::DbError;
+use endpoints::helpers::*;
 
 pub type EndpointResult<T> = Result<T, EndpointError>;
 
@@ -56,5 +60,15 @@ impl From<GetTimeout> for EndpointError {
 impl From<InitializationError> for EndpointError {
     fn from(err: InitializationError) -> EndpointError {
         EndpointError::Db(DbError::from(err))
+    }
+}
+
+
+impl<'r> Responder<'r> for EndpointError {
+    fn respond(self) -> response::Result<'r> {
+        match self {
+            EndpointError::Db(DbError::Db(DieselError::NotFound)) => Ok(not_found_json_response()),
+            _ => Ok(ise_json_response())
+        }
     }
 }
