@@ -62,7 +62,7 @@ fn api_v1_posts_update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) 
 fn api_v1_posts_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
-    diesel::delete(posts.find(id)).get_result::<Post>(conn)?;
+    diesel::delete(posts.find(id)).execute(conn)?;
 
     Ok(empty_response_with_status(Status::NoContent))
 }
