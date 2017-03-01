@@ -16,3 +16,13 @@ table! {
         email -> VarChar,
     }
 }
+
+table! {
+    comments {
+        id -> Integer,
+        body -> VarChar,
+        published -> Bool,
+        user_id -> Integer,
+        post_id -> Integer,
+    }
+}
