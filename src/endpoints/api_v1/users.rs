@@ -37,23 +37,23 @@ fn api_v1_users_create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult
 }
 
 #[get("/users/<id>", format = "application/json")]
-fn api_v1_users_show(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn api_v1_users_show(id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
     let user = users.find(id).first::<User>(conn)?;
 
-    Ok(ok_json_response(json!(user)))
+    Ok(JSON(user))
 }
 
 #[put("/users/<id>", data = "<updated_user>", format = "application/json")]
-fn api_v1_users_update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<Response> {
+fn api_v1_users_update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
     let user = diesel::update(users.find(id))
         .set(&updated_user.0)
         .get_result::<User>(conn)?;
 
-    Ok(ok_json_response(json!(user)))
+    Ok(JSON(user))
 }
 
 #[delete("/users/<id>", format = "application/json")]
