@@ -39,23 +39,23 @@ fn api_v1_posts_create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult
 }
 
 #[get("/posts/<id>", format = "application/json")]
-fn api_v1_posts_show(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn api_v1_posts_show(id: i32, db: State<Db>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
     let post = posts.find(id).first::<Post>(conn)?;
 
-    Ok(ok_json_response(json!(post)))
+    Ok(JSON(post))
 }
 
 #[put("/posts/<id>", data = "<updated_post>", format = "application/json")]
-fn api_v1_posts_update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<Response> {
+fn api_v1_posts_update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
     let post = diesel::update(posts.find(id))
         .set(&updated_post.0)
         .get_result::<Post>(conn)?;
 
-    Ok(ok_json_response(json!(post)))
+    Ok(JSON(post))
 }
 
 #[delete("/posts/<id>", format = "application/json")]
