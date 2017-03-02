@@ -17,7 +17,7 @@ use endpoint_error::{EndpointResult};
 use endpoints::helpers::*;
 
 #[get("/users", format = "application/json")]
-fn api_v1_users_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
     let results = users.load::<User>(conn)?;
@@ -26,7 +26,7 @@ fn api_v1_users_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 }
 
 #[post("/users", data = "<new_user>", format = "application/json")]
-fn api_v1_users_create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
+fn create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
     let user = diesel::insert(&new_user.0)
@@ -37,7 +37,7 @@ fn api_v1_users_create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult
 }
 
 #[get("/users/<id>", format = "application/json")]
-fn api_v1_users_show(id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
+fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
     let user = users.find(id).first::<User>(conn)?;
@@ -46,7 +46,7 @@ fn api_v1_users_show(id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
 }
 
 #[put("/users/<id>", data = "<updated_user>", format = "application/json")]
-fn api_v1_users_update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<JSON<User>> {
+fn update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
     let user = diesel::update(users.find(id))
@@ -57,7 +57,7 @@ fn api_v1_users_update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) 
 }
 
 #[delete("/users/<id>", format = "application/json")]
-fn api_v1_users_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
     diesel::delete(users.find(id)).get_result::<User>(conn)?;

@@ -18,7 +18,7 @@ use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
 
 #[get("/posts", format = "application/json")]
-fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
     let results = posts.filter(published.eq(false))
@@ -28,7 +28,7 @@ fn api_v1_posts_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 }
 
 #[post("/posts", data = "<new_post>", format = "application/json")]
-fn api_v1_posts_create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult<JSON<Post>> {
+fn create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
     let post = diesel::insert(&new_post.0)
@@ -39,7 +39,7 @@ fn api_v1_posts_create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult
 }
 
 #[get("/posts/<id>", format = "application/json")]
-fn api_v1_posts_show(id: i32, db: State<Db>) -> EndpointResult<JSON<Post>> {
+fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
     let post = posts.find(id).first::<Post>(conn)?;
@@ -48,7 +48,7 @@ fn api_v1_posts_show(id: i32, db: State<Db>) -> EndpointResult<JSON<Post>> {
 }
 
 #[put("/posts/<id>", data = "<updated_post>", format = "application/json")]
-fn api_v1_posts_update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<JSON<Post>> {
+fn update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
     let post = diesel::update(posts.find(id))
@@ -59,7 +59,7 @@ fn api_v1_posts_update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) 
 }
 
 #[delete("/posts/<id>", format = "application/json")]
-fn api_v1_posts_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
     diesel::delete(posts.find(id)).get_result::<Post>(conn)?;
@@ -68,7 +68,7 @@ fn api_v1_posts_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
 }
 
 #[get("/users/<id>/posts", format = "application/json")]
-fn api_v1_users_posts_index(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn user_posts_index(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
     let user = users.find(id).first::<User>(conn)?;

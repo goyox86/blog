@@ -18,7 +18,7 @@ use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
 
 #[get("/comments", format = "application/json")]
-fn api_v1_comments_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
     let results = comments.filter(published.eq(false))
@@ -28,7 +28,7 @@ fn api_v1_comments_index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 }
 
 #[post("/comments", data = "<new_comment>", format = "application/json")]
-fn api_v1_comments_create(db: State<Db>, new_comment: JSON<NewComment>) -> EndpointResult<JSON<Comment>> {
+fn create(db: State<Db>, new_comment: JSON<NewComment>) -> EndpointResult<JSON<Comment>> {
     let conn = &*db.pool().get()?;
 
     let comment = diesel::insert(&new_comment.0)
@@ -39,7 +39,7 @@ fn api_v1_comments_create(db: State<Db>, new_comment: JSON<NewComment>) -> Endpo
 }
 
 #[get("/comments/<id>", format = "application/json")]
-fn api_v1_comments_show(id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
+fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
     let conn = &*db.pool().get()?;
 
     let comment = comments.find(id).first::<Comment>(conn)?;
@@ -48,7 +48,7 @@ fn api_v1_comments_show(id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>>
 }
 
 #[put("/comments/<id>", data = "<updated_comment>", format = "application/json")]
-fn api_v1_comments_update(db: State<Db>, id: i32, updated_comment: JSON<UpdatedComment>) -> EndpointResult<JSON<Comment>> {
+fn update(db: State<Db>, id: i32, updated_comment: JSON<UpdatedComment>) -> EndpointResult<JSON<Comment>> {
     let conn = &*db.pool().get()?;
 
     let comment = diesel::update(comments.find(id))
@@ -59,7 +59,7 @@ fn api_v1_comments_update(db: State<Db>, id: i32, updated_comment: JSON<UpdatedC
 }
 
 #[delete("/comments/<id>", format = "application/json")]
-fn api_v1_comments_destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     let conn = &*db.pool().get()?;
 
     diesel::delete(comments.find(id)).get_result::<Comment>(conn)?;
