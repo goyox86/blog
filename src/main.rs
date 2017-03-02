@@ -41,22 +41,22 @@ fn main() {
     match db.init() {
         Ok(_) => {
             rocket::ignite().mount("/api/v1", routes![
-                api_v1::posts::api_v1_posts_index,
-                api_v1::posts::api_v1_posts_create,
-                api_v1::posts::api_v1_posts_show,
-                api_v1::posts::api_v1_posts_update,
-                api_v1::posts::api_v1_posts_destroy,
-                api_v1::posts::api_v1_users_posts_index,
-                api_v1::users::api_v1_users_index,
-                api_v1::users::api_v1_users_create,
-                api_v1::users::api_v1_users_show,
-                api_v1::users::api_v1_users_update,
-                api_v1::users::api_v1_users_destroy,
-                api_v1::comments::api_v1_comments_index,
-                api_v1::comments::api_v1_comments_create,
-                api_v1::comments::api_v1_comments_show,
-                api_v1::comments::api_v1_comments_update,
-                api_v1::comments::api_v1_comments_destroy
+                api_v1::posts::index,
+                api_v1::posts::create,
+                api_v1::posts::show,
+                api_v1::posts::update,
+                api_v1::posts::destroy,
+                api_v1::posts::user_posts_index,
+                api_v1::users::index,
+                api_v1::users::create,
+                api_v1::users::show,
+                api_v1::users::update,
+                api_v1::users::destroy,
+                api_v1::comments::index,
+                api_v1::comments::create,
+                api_v1::comments::show,
+                api_v1::comments::update,
+                api_v1::comments::destroy
             ]).manage(db).launch()
         },
         Err(err) => println!("Db initialization error: {}", err)
