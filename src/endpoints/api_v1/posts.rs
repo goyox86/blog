@@ -77,3 +77,12 @@ fn user_posts_index(id: i32, db: State<Db>) -> EndpointResult<Response> {
     Ok(ok_json_response(json!(results)))
 }
 
+#[get("/users/<id>/posts/<post_id>", format = "application/json")]
+fn user_post_show(id: i32, post_id: i32, db: State<Db>) -> EndpointResult<JSON<Post>> {
+    let conn = &*db.pool().get()?;
+
+    let post = posts.filter(user_id.eq(id).and(posts::id.eq(&post_id)))
+        .first::<Post>(conn)?;
+
+    Ok(JSON(post))
+}

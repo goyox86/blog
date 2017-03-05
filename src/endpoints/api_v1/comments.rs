@@ -92,3 +92,13 @@ fn user_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
 
     Ok(JSON(json!(results)))
 }
+
+#[get("/posts/<id>/comments/<comment_id>", format = "application/json")]
+fn post_comment_show(id: i32, comment_id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
+    let conn = &*db.pool().get()?;
+
+    let comment = comments.filter(post_id.eq(id).and(comments::id.eq(&comment_id)))
+        .first::<Comment>(conn)?;
+
+    Ok(JSON(comment))
+}
