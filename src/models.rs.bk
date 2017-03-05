@@ -32,6 +32,7 @@ pub struct User {
     pub name: String,
     pub username: String,
     pub email: String,
+
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
@@ -39,7 +40,7 @@ pub struct User {
 pub struct NewUser {
     pub name: String,
     pub username: String,
-    pub email: String,
+    pub email: String
 }
 
 #[derive(Serialize, Deserialize, AsChangeset)]
@@ -47,7 +48,7 @@ pub struct NewUser {
 pub struct UpdatedUser {
     pub name: Option<String>,
     pub username: Option<String>,
-    pub email: Option<String>,
+    pub email: Option<String>
 }
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
@@ -58,7 +59,7 @@ pub struct Comment {
     pub body: String,
     pub published: bool,
     pub user_id: i32,
-    pub post_id: i32,
+    pub post_id: i32
 }
 
 #[derive(Insertable, Serialize, Deserialize)]
@@ -66,7 +67,7 @@ pub struct Comment {
 pub struct NewComment {
     pub body: String,
     pub user_id: i32,
-    pub post_id: i32,
+    pub post_id: i32
 }
 
 #[derive(Serialize, Deserialize, AsChangeset)]
@@ -75,7 +76,7 @@ pub struct UpdatedComment {
     pub body: Option<String>,
     pub published: Option<bool>,
     pub user_id: Option<i32>,
-    pub post_id: Option<i32>,
+    pub post_id: Option<i32>
 }
 
 use super::schema::posts;

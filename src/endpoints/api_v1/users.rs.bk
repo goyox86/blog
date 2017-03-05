@@ -13,7 +13,7 @@ use schema::posts::dsl::*;
 use schema::users::dsl::*;
 use schema::users;
 
-use endpoint_error::EndpointResult;
+use endpoint_error::{EndpointResult};
 use endpoints::helpers::*;
 
 #[get("/users", format = "application/json")]
@@ -29,7 +29,8 @@ fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 fn create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
-    let user = diesel::insert(&new_user.0).into(users::table)
+    let user = diesel::insert(&new_user.0)
+        .into(users::table)
         .get_result::<User>(conn)?;
 
     Ok(JSON(user))
@@ -48,7 +49,8 @@ fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
 fn update(db: State<Db>, id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
-    let user = diesel::update(users.find(id)).set(&updated_user.0)
+    let user = diesel::update(users.find(id))
+        .set(&updated_user.0)
         .get_result::<User>(conn)?;
 
     Ok(JSON(user))
@@ -62,3 +64,4 @@ fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
 
     Ok(empty_response_with_status(Status::NoContent))
 }
+

@@ -40,9 +40,7 @@ fn main() {
 
     match db.init() {
         Ok(_) => {
-            rocket::ignite()
-                .mount("/api/v1",
-                       routes![
+            rocket::ignite().mount("/api/v1", routes![
                 api_v1::posts::index,
                 api_v1::posts::create,
                 api_v1::posts::show,
@@ -63,10 +61,8 @@ fn main() {
                 api_v1::comments::post_comments_index,
                 api_v1::comments::user_comments_index,
                 api_v1::comments::post_comment_show,
-            ])
-                .manage(db)
-                .launch()
-        }
-        Err(err) => println!("Db initialization error: {}", err),
+            ]).manage(db).launch()
+        },
+        Err(err) => println!("Db initialization error: {}", err)
     };
 }

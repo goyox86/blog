@@ -1,0 +1,9 @@
+Added endpoints to get the comments for a post and the comments a user has made.
+
+Details
+
+- Declared has_many association between Post -> Comment.
+- Declared has_many association between User -> Comment.
+- Added a new action to get the comments for a post.
+- Added a new action to get the comments a user has made.
+- Mounted the two new actions.

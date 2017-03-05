@@ -31,7 +31,8 @@ fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 fn create(db: State<Db>, new_post: JSON<NewPost>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
-    let post = diesel::insert(&new_post.0).into(posts::table)
+    let post = diesel::insert(&new_post.0)
+        .into(posts::table)
         .get_result::<Post>(conn)?;
 
     Ok(JSON(post))
@@ -50,7 +51,8 @@ fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<Post>> {
 fn update(db: State<Db>, id: i32, updated_post: JSON<UpdatedPost>) -> EndpointResult<JSON<Post>> {
     let conn = &*db.pool().get()?;
 
-    let post = diesel::update(posts.find(id)).set(&updated_post.0)
+    let post = diesel::update(posts.find(id))
+        .set(&updated_post.0)
         .get_result::<Post>(conn)?;
 
     Ok(JSON(post))

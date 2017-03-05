@@ -68,7 +68,7 @@ impl<'r> Responder<'r> for EndpointError {
     fn respond(self) -> response::Result<'r> {
         match self {
             EndpointError::Db(DbError::Db(DieselError::NotFound)) => Ok(not_found_json_response()),
-            _ => Ok(ise_json_response()),
+            _ => Ok(ise_json_response())
         }
     }
 }

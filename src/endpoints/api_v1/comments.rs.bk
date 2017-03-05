@@ -33,7 +33,8 @@ fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 fn create(db: State<Db>, new_comment: JSON<NewComment>) -> EndpointResult<JSON<Comment>> {
     let conn = &*db.pool().get()?;
 
-    let comment = diesel::insert(&new_comment.0).into(comments::table)
+    let comment = diesel::insert(&new_comment.0)
+        .into(comments::table)
         .get_result::<Comment>(conn)?;
 
     Ok(JSON(comment))
@@ -49,13 +50,11 @@ fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
 }
 
 #[put("/comments/<id>", data = "<updated_comment>", format = "application/json")]
-fn update(db: State<Db>,
-          id: i32,
-          updated_comment: JSON<UpdatedComment>)
-          -> EndpointResult<JSON<Comment>> {
+fn update(db: State<Db>, id: i32, updated_comment: JSON<UpdatedComment>) -> EndpointResult<JSON<Comment>> {
     let conn = &*db.pool().get()?;
 
-    let comment = diesel::update(comments.find(id)).set(&updated_comment.0)
+    let comment = diesel::update(comments.find(id))
+        .set(&updated_comment.0)
         .get_result::<Comment>(conn)?;
 
     Ok(JSON(comment))
@@ -76,7 +75,8 @@ fn post_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
 
     let post = posts.find(id).first::<Post>(conn)?;
 
-    let results = Comment::belonging_to(&post).get_results::<Comment>(conn)?;
+    let results = Comment::belonging_to(&post)
+        .get_results::<Comment>(conn)?;
 
     Ok(JSON(json!(results)))
 }
@@ -87,7 +87,8 @@ fn user_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
 
     let user = users.find(id).first::<User>(conn)?;
 
-    let results = Comment::belonging_to(&user).get_results::<Comment>(conn)?;
+    let results = Comment::belonging_to(&user)
+        .get_results::<Comment>(conn)?;
 
     Ok(JSON(json!(results)))
 }
