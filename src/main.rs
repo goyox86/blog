@@ -47,6 +47,7 @@ fn main() {
                 api_v1::posts::update,
                 api_v1::posts::destroy,
                 api_v1::posts::user_posts_index,
+                api_v1::posts::user_post_show,
                 api_v1::users::index,
                 api_v1::users::create,
                 api_v1::users::show,
@@ -58,7 +59,8 @@ fn main() {
                 api_v1::comments::update,
                 api_v1::comments::destroy,
                 api_v1::comments::post_comments_index,
-                api_v1::comments::user_comments_index
+                api_v1::comments::user_comments_index,
+                api_v1::comments::post_comment_show,
             ]).manage(db).launch()
         },
         Err(err) => println!("Db initialization error: {}", err)
