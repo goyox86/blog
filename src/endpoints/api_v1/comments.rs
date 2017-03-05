@@ -9,10 +9,12 @@ use db::Db;
 use models::Comment;
 use models::NewComment;
 use models::UpdatedComment;
+use models::Post;
+use models::User;
+use schema::posts::dsl::*;
 use schema::comments::dsl::*;
 use schema::comments;
 use schema::users::dsl::*;
-use schema::users;
 
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
@@ -21,8 +23,8 @@ use endpoints::helpers::*;
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
-    let results = comments.filter(published.eq(false))
-        .load::<Comment>(conn)?;
+    // TODO add back the 'published' restriction
+    let results = comments.load::<Comment>(conn)?;
 
     Ok(JSON(json!(results)))
 }
@@ -67,3 +69,26 @@ fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
     Ok(empty_response_with_status(Status::NoContent))
 }
 
+#[get("/posts/<id>/comments", format = "application/json")]
+fn post_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
+    let conn = &*db.pool().get()?;
+
+    let post = posts.find(id).first::<Post>(conn)?;
+
+    let results = Comment::belonging_to(&post)
+        .get_results::<Comment>(conn)?;
+
+    Ok(JSON(json!(results)))
+}
+
+#[get("/users/<id>/comments", format = "application/json")]
+fn user_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
+    let conn = &*db.pool().get()?;
+
+    let user = users.find(id).first::<User>(conn)?;
+
+    let results = Comment::belonging_to(&user)
+        .get_results::<Comment>(conn)?;
+
+    Ok(JSON(json!(results)))
+}

@@ -56,7 +56,9 @@ fn main() {
                 api_v1::comments::create,
                 api_v1::comments::show,
                 api_v1::comments::update,
-                api_v1::comments::destroy
+                api_v1::comments::destroy,
+                api_v1::comments::post_comments_index,
+                api_v1::comments::user_comments_index
             ]).manage(db).launch()
         },
         Err(err) => println!("Db initialization error: {}", err)

@@ -1,5 +1,6 @@
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[belongs_to(User)]
+#[has_many(comments)]
 pub struct Post {
     pub id: i32,
     pub title: String,
@@ -25,6 +26,7 @@ pub struct UpdatedPost {
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[has_many(posts)]
+#[has_many(comments)]
 pub struct User {
     pub id: i32,
     pub name: String,
