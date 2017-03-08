@@ -18,13 +18,27 @@ use schema::users::dsl::*;
 
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
+use endpoints::pagination::Pagination;
 
+
+//TODO: Put the common code to get the comments into a reusable function
 #[get("/comments", format = "application/json")]
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
     // TODO add back the 'published' restriction
     let results = comments.load::<Comment>(conn)?;
+
+    Ok(JSON(json!(results)))
+}
+
+#[get("/comments?<pagination>", format = "application/json")]
+fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+    let conn = &*db.pool().get()?;
+
+    let results = comments.limit(pagination.per_page)
+        .offset(pagination.per_page * (pagination.page - 1))
+        .load::<Comment>(conn)?;
 
     Ok(JSON(json!(results)))
 }
