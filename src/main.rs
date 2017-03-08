@@ -1,4 +1,4 @@
-#![feature(plugin)]
+#![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
 #[macro_use]
@@ -44,6 +44,7 @@ fn main() {
                 .mount("/api/v1",
                        routes![
                 api_v1::posts::index,
+                api_v1::posts::index_paginated,
                 api_v1::posts::create,
                 api_v1::posts::show,
                 api_v1::posts::update,
@@ -51,11 +52,13 @@ fn main() {
                 api_v1::posts::user_posts_index,
                 api_v1::posts::user_post_show,
                 api_v1::users::index,
+                api_v1::users::index_paginated,
                 api_v1::users::create,
                 api_v1::users::show,
                 api_v1::users::update,
                 api_v1::users::destroy,
                 api_v1::comments::index,
+                api_v1::comments::index_paginated,
                 api_v1::comments::create,
                 api_v1::comments::show,
                 api_v1::comments::update,

@@ -16,12 +16,27 @@ use schema::users::dsl::*;
 
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
+use endpoints::pagination::Pagination;
 
+
+//TODO: Put the common code to get the posts into a reusable function
 #[get("/posts", format = "application/json")]
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
     let results = posts.filter(published.eq(false))
+        .load::<Post>(conn)?;
+
+    Ok(JSON(json!(results)))
+}
+
+#[get("/posts?<pagination>", format = "application/json")]
+fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+    let conn = &*db.pool().get()?;
+
+    let results = posts.filter(published.eq(false))
+        .limit(pagination.per_page)
+        .offset(pagination.per_page * (pagination.page - 1))
         .load::<Post>(conn)?;
 
     Ok(JSON(json!(results)))

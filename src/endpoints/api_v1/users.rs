@@ -15,12 +15,25 @@ use schema::users;
 
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
+use endpoints::pagination::Pagination;
 
+//TODO: Put the common code to get the users into a reusable function
 #[get("/users", format = "application/json")]
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
     let results = users.load::<User>(conn)?;
+
+    Ok(JSON(json!(results)))
+}
+
+#[get("/users?<pagination>", format = "application/json")]
+fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+    let conn = &*db.pool().get()?;
+
+    let results = users.limit(pagination.per_page)
+        .offset(pagination.per_page * (pagination.page - 1))
+        .load::<User>(conn)?;
 
     Ok(JSON(json!(results)))
 }
