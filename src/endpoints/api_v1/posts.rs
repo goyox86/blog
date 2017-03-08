@@ -24,7 +24,7 @@ use endpoints::pagination::Pagination;
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
-    let results = posts.filter(published.eq(false))
+    let results = posts.filter(published.eq(true))
         .load::<Post>(conn)?;
 
     Ok(JSON(json!(results)))
@@ -37,7 +37,7 @@ fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON
     let page = pagination.get_page();
     let per_page = pagination.get_per_page();
 
-    let results = posts.filter(published.eq(false))
+    let results = posts.filter(published.eq(true))
         .limit(per_page)
         .offset(per_page * (page - 1))
         .load::<Post>(conn)?;

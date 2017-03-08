@@ -26,8 +26,8 @@ use endpoints::pagination::Pagination;
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
-    // TODO add back the 'published' restriction
-    let results = comments.load::<Comment>(conn)?;
+    let results = comments.filter(comments::published.eq(true))
+        .load::<Comment>(conn)?;
 
     Ok(JSON(json!(results)))
 }
@@ -39,7 +39,8 @@ fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON
     let page = pagination.get_page();
     let per_page = pagination.get_per_page();
 
-    let results = comments.limit(per_page)
+    let results = comments.filter(comments::published.eq(true))
+        .limit(per_page)
         .offset(per_page * (page - 1))
         .load::<Comment>(conn)?;
 
