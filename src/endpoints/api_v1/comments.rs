@@ -36,8 +36,11 @@ fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
     let conn = &*db.pool().get()?;
 
-    let results = comments.limit(pagination.per_page)
-        .offset(pagination.per_page * (pagination.page - 1))
+    let page = pagination.get_page();
+    let per_page = pagination.get_per_page();
+
+    let results = comments.limit(per_page)
+        .offset(per_page * (page - 1))
         .load::<Comment>(conn)?;
 
     Ok(JSON(json!(results)))
