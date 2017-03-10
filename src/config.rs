@@ -31,7 +31,7 @@ impl error::Error for DbConfigError {
     fn description(&self) -> &str {
         match *self {
             DbConfigError::Io(ref err) => err.description(),
-            DbConfigError::Parsing(ref err) => &err,
+            DbConfigError::Parsing(ref err) => err,
         }
     }
 
@@ -91,7 +91,7 @@ impl DbConfig {
             None => {
                 let desc = parser.errors
                     .iter()
-                    .fold(String::new(), |acc, ref error| acc + &format!("{}", error));
+                    .fold(String::new(), |acc, error| acc + &format!("{}", error));
                 return Err(DbConfigError::Parsing(format!("Parsing error {}", desc)));
             }
             Some(toml) => toml,

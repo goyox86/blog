@@ -28,7 +28,7 @@ fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
 
 #[get("/posts?<pagination>", format = "application/json")]
 fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
-    let results = published_posts(&*db, Some(pagination))?;
+    let results = published_posts(&*db, Some(&pagination))?;
 
     Ok(JSON(json!(results)))
 }
@@ -91,7 +91,7 @@ fn user_post_show(id: i32, post_id: i32, db: State<Db>) -> EndpointResult<JSON<P
     Ok(JSON(post))
 }
 
-fn published_posts(db: &Db, pagination: Option<Pagination>) -> Result<Vec<Post>, DbError> {
+fn published_posts(db: &Db, pagination: Option<&Pagination>) -> Result<Vec<Post>, DbError> {
     let mut query = posts.filter(published.eq(true)).into_boxed();
 
     if let Some(pagination) = pagination {
@@ -103,5 +103,5 @@ fn published_posts(db: &Db, pagination: Option<Pagination>) -> Result<Vec<Post>,
     let conn = &*db.pool().get()?;
 
     query.load::<Post>(conn)
-        .map_err(|err| DbError::from(err))
+        .map_err(DbError::from)
 }

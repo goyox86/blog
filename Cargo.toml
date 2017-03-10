@@ -16,3 +16,7 @@ rocket_contrib = "0.2.0"
 serde = "0.9"
 serde_derive = "0.9"
 serde_json = "0.9"
+clippy = {version = "*", optional = true}
+
+[features]
+default = []
