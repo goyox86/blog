@@ -72,7 +72,7 @@ fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
 
     diesel::delete(comments.find(id)).get_result::<Comment>(conn)?;
 
-    Ok(empty_response_with_status(Status::NoContent))
+    Response::build().status(Status::NoContent).ok()
 }
 
 #[get("/posts/<id>/comments", format = "application/json")]

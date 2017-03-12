@@ -66,7 +66,7 @@ fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
 
     diesel::delete(users.find(id)).get_result::<User>(conn)?;
 
-    Ok(empty_response_with_status(Status::NoContent))
+    Response::build().status(Status::NoContent).ok()
 }
 
 fn all_users(db: &Db, pagination: Option<Pagination>) -> Result<Vec<User>, DbError> {

@@ -9,9 +9,7 @@ pub mod helpers {
     use std::io::Cursor;
 
     pub fn empty_response_with_status<'r>(status: Status) -> Response<'r> {
-        let mut response = Response::new();
-        response.set_status(status);
-        response
+        Response::build().status(status).finalize()
     }
 
     pub fn json_response_with_status<'r>(status: Status, json: Value) -> Response<'r> {
