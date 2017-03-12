@@ -5,7 +5,7 @@ use rocket::{State, Response};
 use rocket::http::Status;
 use rocket_contrib::{JSON, Value};
 
-use db::Db;
+use db::{Db, DbError};
 use models::Comment;
 use models::NewComment;
 use models::UpdatedComment;
@@ -20,29 +20,16 @@ use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
 use endpoints::pagination::Pagination;
 
-
-//TODO: Put the common code to get the comments into a reusable function
 #[get("/comments", format = "application/json")]
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
-    let conn = &*db.pool().get()?;
-
-    let results = comments.filter(comments::published.eq(true))
-        .load::<Comment>(conn)?;
+    let results = all_comments(&db, None)?;
 
     Ok(JSON(json!(results)))
 }
 
 #[get("/comments?<pagination>", format = "application/json")]
 fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
-    let conn = &*db.pool().get()?;
-
-    let page = pagination.get_page();
-    let per_page = pagination.get_per_page();
-
-    let results = comments.filter(comments::published.eq(true))
-        .limit(per_page)
-        .offset(per_page * (page - 1))
-        .load::<Comment>(conn)?;
+    let results = all_comments(&db, Some(pagination))?;
 
     Ok(JSON(json!(results)))
 }
@@ -118,4 +105,19 @@ fn post_comment_show(id: i32, comment_id: i32, db: State<Db>) -> EndpointResult<
         .first::<Comment>(conn)?;
 
     Ok(JSON(comment))
+}
+
+fn all_comments(db: &Db, pagination: Option<Pagination>) -> Result<Vec<Comment>, DbError> {
+    let mut query = comments.filter(comments::published.eq(true)).into_boxed();
+
+    if let Some(pagination) = pagination {
+        let page = pagination.get_page();
+        let per_page = pagination.get_per_page();
+        query = query.limit(per_page).offset(per_page * (page - 1));
+    }
+
+    let conn = &*db.pool().get()?;
+
+    query.load::<Comment>(conn)
+        .map_err(|err| DbError::from(err))
 }
