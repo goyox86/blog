@@ -1,5 +1,8 @@
 #![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+#![cfg_attr(feature = "clippy", allow(needless_pass_by_value))]
 
 #[macro_use]
 extern crate diesel;
@@ -33,8 +36,8 @@ use db::Db;
 use endpoints::api_v1;
 
 fn main() {
-    let env_str = &std_env::var("BLOG_ENV").unwrap_or(format!("development"));
-    let env = Env::from_str(env_str).unwrap();
+    let env_str = &std_env::var("BLOG_ENV").unwrap_or_else(|_| "development".to_owned());
+    let env = Env::from_str(env_str).unwrap_or_default();
     let db_config = DbConfig::load(&env).expect("Error loading DB configuration");
     let mut db = Db::new(db_config);
 
