@@ -18,7 +18,6 @@ use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
 use endpoints::pagination::Pagination;
 
-
 #[get("/posts", format = "application/json")]
 fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
     let results = published_posts(&*db, None)?;
