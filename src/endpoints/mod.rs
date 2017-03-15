@@ -1,6 +1,7 @@
 
 pub mod api_v1;
 pub mod pagination;
+pub mod auth;
 
 pub mod helpers {
     use rocket::http::Status;

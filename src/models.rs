@@ -1,3 +1,5 @@
+use bcrypt::{DEFAULT_COST, hash};
+
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[belongs_to(User)]
 #[has_many(comments)]
@@ -32,14 +34,25 @@ pub struct User {
     pub name: String,
     pub username: String,
     pub email: String,
+    #[serde(skip_serializing)]
+    pub hashed_password: Option<String>
 }
 
-#[derive(Insertable, Serialize, Deserialize)]
-#[table_name="users"]
+#[derive(Serialize, Deserialize)]
 pub struct NewUser {
     pub name: String,
     pub username: String,
     pub email: String,
+    pub password: String
+}
+
+#[derive(Insertable)]
+#[table_name="users"]
+pub struct NewUserReadyForInsertion {
+    pub name: String,
+    pub username: String,
+    pub email: String,
+    pub hashed_password: String
 }
 
 #[derive(Serialize, Deserialize, AsChangeset)]
@@ -76,6 +89,18 @@ pub struct UpdatedComment {
     pub published: Option<bool>,
     pub user_id: Option<i32>,
     pub post_id: Option<i32>,
+}
+
+impl From<NewUser> for NewUserReadyForInsertion {
+    fn from(user: NewUser) -> NewUserReadyForInsertion {
+        NewUserReadyForInsertion {
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            // TODO: Adress this unwrap
+            hashed_password: hash(&user.password, DEFAULT_COST).unwrap()
+        }
+    }
 }
 
 use super::schema::posts;

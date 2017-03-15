@@ -192,6 +192,7 @@ pub struct Config {
     db: DbConfig,
 }
 
+#[allow(dead_code)]
 impl Config {
     pub fn load(environment: &Env) -> Result<Config, ConfigError> {
         let database_config = DbConfig::load(environment)?;
@@ -206,5 +207,4 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 }

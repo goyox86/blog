@@ -14,6 +14,7 @@ table! {
         username -> VarChar,
         name -> VarChar,
         email -> VarChar,
+        hashed_password -> Nullable<VarChar>,
     }
 }
 

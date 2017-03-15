@@ -17,6 +17,7 @@ extern crate rocket_contrib;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
+extern crate bcrypt;
 
 use std::env as std_env;
 use std::str::FromStr;
@@ -28,12 +29,13 @@ mod config;
 mod env;
 mod db;
 
+
 mod endpoint_error;
 
 use env::Env;
 use config::DbConfig;
 use db::Db;
-use endpoints::api_v1;
+use endpoints::*;
 
 fn main() {
     let env_str = &std_env::var("BLOG_ENV").unwrap_or_else(|_| "development".to_owned());
@@ -43,9 +45,7 @@ fn main() {
 
     match db.init() {
         Ok(_) => {
-            rocket::ignite()
-                .mount("/api/v1",
-                       routes![
+            rocket::ignite().mount("/api/v1", routes![
                 api_v1::posts::index,
                 api_v1::posts::index_paginated,
                 api_v1::posts::create,
@@ -69,9 +69,11 @@ fn main() {
                 api_v1::comments::post_comments_index,
                 api_v1::comments::user_comments_index,
                 api_v1::comments::post_comment_show,
-            ])
-                .manage(db)
-                .launch()
+            ]).mount("/auth", routes![
+                auth::basic::login,
+                auth::basic::login_json,
+            ]).manage(db)
+            .launch()
         }
         Err(err) => println!("Db initialization error: {}", err),
     };

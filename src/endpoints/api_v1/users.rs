@@ -8,6 +8,7 @@ use rocket_contrib::{JSON, Value};
 use db::{Db, DbError};
 use models::User;
 use models::NewUser;
+use models::NewUserReadyForInsertion;
 use models::UpdatedUser;
 use schema::posts::dsl::*;
 use schema::users::dsl::*;
@@ -35,7 +36,8 @@ fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON
 fn create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
     let conn = &*db.pool().get()?;
 
-    let user = diesel::insert(&new_user.0).into(users::table)
+    let new_user = NewUserReadyForInsertion::from(new_user.0);
+    let user = diesel::insert(&new_user).into(users::table)
         .get_result::<User>(conn)?;
 
     Ok(JSON(user))
