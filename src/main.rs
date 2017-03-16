@@ -3,6 +3,7 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 #![cfg_attr(feature = "clippy", allow(needless_pass_by_value))]
+#![deny(warnings)]
 
 #[macro_use]
 extern crate diesel;
@@ -17,7 +18,10 @@ extern crate rocket_contrib;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde;
 extern crate bcrypt;
+extern crate jwt;
+extern crate crypto;
 
 use std::env as std_env;
 use std::str::FromStr;

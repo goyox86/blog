@@ -17,6 +17,8 @@ serde = "0.9"
 serde_derive = "0.9"
 serde_json = "0.9"
 bcrypt = "0.1"
+jwt = "0.4.0"
+rust-crypto = "0.2.36"
 clippy = {version = "*", optional = true}
 
 [features]

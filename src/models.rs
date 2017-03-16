@@ -1,4 +1,5 @@
 use bcrypt::{DEFAULT_COST, hash};
+use serde::de::{self, Deserializer, Deserialize};
 
 #[derive(Identifiable, Queryable, Associations, Serialize, Deserialize)]
 #[belongs_to(User)]
@@ -38,20 +39,14 @@ pub struct User {
     pub hashed_password: Option<String>
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize, Insertable)]
+#[table_name="users"]
 pub struct NewUser {
     pub name: String,
     pub username: String,
     pub email: String,
-    pub password: String
-}
-
-#[derive(Insertable)]
-#[table_name="users"]
-pub struct NewUserReadyForInsertion {
-    pub name: String,
-    pub username: String,
-    pub email: String,
+    #[serde(rename(deserialize = "password"))]
+    #[serde(deserialize_with = "hash_user_password")]
     pub hashed_password: String
 }
 
@@ -91,16 +86,13 @@ pub struct UpdatedComment {
     pub post_id: Option<i32>,
 }
 
-impl From<NewUser> for NewUserReadyForInsertion {
-    fn from(user: NewUser) -> NewUserReadyForInsertion {
-        NewUserReadyForInsertion {
-            name: user.name,
-            username: user.username,
-            email: user.email,
-            // TODO: Adress this unwrap
-            hashed_password: hash(&user.password, DEFAULT_COST).unwrap()
-        }
-    }
+fn hash_user_password<D>(deserializer: D) -> Result<String, D::Error>
+    where D: Deserializer
+{
+    let password: String = Deserialize::deserialize(deserializer)?;
+    hash(&password, DEFAULT_COST)
+        .map_err(de::Error::custom)
+        .map(|hashed_password|hashed_password)
 }
 
 use super::schema::posts;
