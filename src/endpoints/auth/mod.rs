@@ -8,7 +8,7 @@ use diesel::result::Error as DieselError;
 use bcrypt::{verify, BcryptError};
 
 use db::Db;
-use models::User;
+use models::user::User;
 use endpoint_error::EndpointResult;
 use endpoint_error::EndpointError;
 

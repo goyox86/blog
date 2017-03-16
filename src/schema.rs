@@ -27,3 +27,11 @@ table! {
         post_id -> Integer,
     }
 }
+
+table! {
+    tokens {
+        id -> Integer,
+        value -> VarChar,
+        user_id -> Integer,
+    }
+}

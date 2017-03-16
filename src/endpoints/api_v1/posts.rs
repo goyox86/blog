@@ -6,10 +6,8 @@ use rocket::http::Status;
 use rocket_contrib::{JSON, Value};
 
 use db::{Db, DbError};
-use models::Post;
-use models::NewPost;
-use models::UpdatedPost;
-use models::User;
+use models::post::*;
+use models::user::User;
 use schema::posts::dsl::*;
 use schema::posts;
 use schema::users::dsl::*;

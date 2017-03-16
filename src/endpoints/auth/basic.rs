@@ -1,19 +1,11 @@
-use std::default::Default;
-
-use rocket::{State, Response};
-use rocket_contrib::{JSON, Value};
+use rocket::State;
+use rocket_contrib::JSON;
 use rocket::request::Form;
 
-use crypto::sha2::Sha256;
-use jwt::{Header, Registered, Token};
-
 use db::Db;
+use models::token::Token;
 use endpoint_error::EndpointResult;
-use endpoints::helpers::*;
 use auth::authenticate_user;
-
-// TODO Get this from the config
-static AUTH_SECRET: &'static str = "some_secret_key";
 
 #[derive(Deserialize, FromForm)]
 pub struct BasicLoginParams {
@@ -22,26 +14,20 @@ pub struct BasicLoginParams {
 }
 
 #[post("/basic", data = "<login_params>", format = "application/x-www-form-urlencoded")]
-fn login<'r>(db: State<Db>, login_params: Form<BasicLoginParams>) -> EndpointResult<Response<'r>> {
+fn login<'r>(db: State<Db>, login_params: Form<BasicLoginParams>) -> EndpointResult<JSON<Token>> {
     let login_params = login_params.into_inner();
-    let user = authenticate_user(&db, &login_params.email, &login_params.password)?;
+    let mut user = authenticate_user(&db, &login_params.email, &login_params.password)?;
 
-    let header: Header = Default::default();
-    let claims = Registered { sub: Some(user.email), ..Default::default() };
-    let token = Token::new(header, claims);
-    let jwt = token.signed(AUTH_SECRET.as_bytes(), Sha256::new()).unwrap();
+    let token = user.generate_token(&db)?;
 
-    Ok(ok_json_response(json!({"token": jwt})))
+    Ok(JSON(token))
 }
 
 #[post("/basic", data = "<login_params>", format = "application/json")]
-fn login_json(db: State<Db>, login_params: JSON<BasicLoginParams>) -> EndpointResult<JSON<Value>> {
-    let user = authenticate_user(&db, &login_params.email, &login_params.password)?;
+fn login_json(db: State<Db>, login_params: JSON<BasicLoginParams>) -> EndpointResult<JSON<Token>> {
+    let mut user = authenticate_user(&db, &login_params.email, &login_params.password)?;
 
-    let header: Header = Default::default();
-    let claims = Registered { sub: Some(user.email), ..Default::default() };
-    let token = Token::new(header, claims);
-    let jwt = token.signed(AUTH_SECRET.as_bytes(), Sha256::new()).unwrap();
+    let token = user.generate_token(&db)?;
 
-    Ok(JSON(json!({"token": jwt})))
+    Ok(JSON(token))
 }

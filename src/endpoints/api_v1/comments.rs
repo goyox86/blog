@@ -6,15 +6,13 @@ use rocket::http::Status;
 use rocket_contrib::{JSON, Value};
 
 use db::{Db, DbError};
-use models::Comment;
-use models::NewComment;
-use models::UpdatedComment;
-use models::Post;
-use models::User;
-use schema::posts::dsl::*;
+use models::comment::*;
+use models::post::Post;
+use models::user::User;
 use schema::comments::dsl::*;
 use schema::comments;
 use schema::users::dsl::*;
+use schema::posts::dsl::*;
 
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
