@@ -9,7 +9,7 @@ use rocket::http::Status;
 use rocket::response::Responder;
 
 use db::DbError;
-use auth::AuthError;
+use auth::AuthenticationError;
 use endpoints::helpers::*;
 
 pub type EndpointResult<T> = Result<T, EndpointError>;
@@ -17,7 +17,7 @@ pub type EndpointResult<T> = Result<T, EndpointError>;
 #[derive(Debug)]
 pub enum EndpointError {
     Db(DbError),
-    Auth(AuthError)
+    Auth(AuthenticationError)
 }
 
 impl fmt::Display for EndpointError {
@@ -69,9 +69,9 @@ impl From<InitializationError> for EndpointError {
     }
 }
 
-impl From<AuthError> for EndpointError {
-    fn from(err: AuthError) -> EndpointError {
-        EndpointError::Auth(AuthError::from(err))
+impl From<AuthenticationError> for EndpointError {
+    fn from(err: AuthenticationError) -> EndpointError {
+        EndpointError::Auth(AuthenticationError::from(err))
     }
 }
 

@@ -71,6 +71,17 @@ impl User {
         diesel::insert(&new_token).into(tokens::table).get_result::<Token>(conn)
             .map_err(DbError::from)
     }
+
+    pub fn find_by_token(db: &Db, token: &str) -> Result<User, DbError> {
+        use schema::users::dsl::*;
+        use schema::tokens::dsl::*;
+
+        let conn = &*db.pool().get()?;
+
+        let token = tokens.filter(value.eq(token)).first::<Token>(conn)?;
+
+        users.find(token.user_id).first::<User>(conn)
+            .map(|user| user)
+            .map_err(DbError::from)
+    }
 }
-
-

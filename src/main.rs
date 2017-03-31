@@ -22,6 +22,7 @@ extern crate serde;
 extern crate bcrypt;
 extern crate jwt;
 extern crate crypto;
+extern crate base64;
 
 use std::env as std_env;
 use std::str::FromStr;

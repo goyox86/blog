@@ -17,23 +17,30 @@ use schema::posts::dsl::*;
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
 use endpoints::pagination::Pagination;
+use auth::Authentication;
 
 #[get("/comments", format = "application/json")]
-fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn index(auth: Authentication, db: State<Db>) -> EndpointResult<JSON<Value>> {
+    auth.authenticate(&db)?;
+
     let results = all_comments(&db, None)?;
 
     Ok(JSON(json!(results)))
 }
 
 #[get("/comments?<pagination>", format = "application/json")]
-fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+fn index_paginated(auth: Authentication, db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+    auth.authenticate(&db)?;
+
     let results = all_comments(&db, Some(pagination))?;
 
     Ok(JSON(json!(results)))
 }
 
 #[post("/comments", data = "<new_comment>", format = "application/json")]
-fn create(db: State<Db>, new_comment: JSON<NewComment>) -> EndpointResult<JSON<Comment>> {
+fn create(auth: Authentication, db: State<Db>, new_comment: JSON<NewComment>) -> EndpointResult<JSON<Comment>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let comment = diesel::insert(&new_comment.0).into(comments::table)
@@ -43,7 +50,9 @@ fn create(db: State<Db>, new_comment: JSON<NewComment>) -> EndpointResult<JSON<C
 }
 
 #[get("/comments/<id>", format = "application/json")]
-fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
+fn show(auth: Authentication, id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let comment = comments.find(id).first::<Comment>(conn)?;
@@ -52,10 +61,12 @@ fn show(id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
 }
 
 #[put("/comments/<id>", data = "<updated_comment>", format = "application/json")]
-fn update(db: State<Db>,
+fn update(auth: Authentication,
+          db: State<Db>,
           id: i32,
           updated_comment: JSON<UpdatedComment>)
           -> EndpointResult<JSON<Comment>> {
+    auth.authenticate(&db)?;
     let conn = &*db.pool().get()?;
 
     let comment = diesel::update(comments.find(id)).set(&updated_comment.0)
@@ -65,7 +76,9 @@ fn update(db: State<Db>,
 }
 
 #[delete("/comments/<id>", format = "application/json")]
-fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn destroy(auth: Authentication, id: i32, db: State<Db>) -> EndpointResult<Response> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     diesel::delete(comments.find(id)).get_result::<Comment>(conn)?;
@@ -74,7 +87,9 @@ fn destroy(id: i32, db: State<Db>) -> EndpointResult<Response> {
 }
 
 #[get("/posts/<id>/comments", format = "application/json")]
-fn post_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn post_comments_index(auth: Authentication, id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let post = posts.find(id).first::<Post>(conn)?;
@@ -85,7 +100,9 @@ fn post_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
 }
 
 #[get("/users/<id>/comments", format = "application/json")]
-fn user_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn user_comments_index(auth: Authentication, id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let user = users.find(id).first::<User>(conn)?;
@@ -96,7 +113,9 @@ fn user_comments_index(id: i32, db: State<Db>) -> EndpointResult<JSON<Value>> {
 }
 
 #[get("/posts/<id>/comments/<comment_id>", format = "application/json")]
-fn post_comment_show(id: i32, comment_id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
+fn post_comment_show(auth: Authentication, id: i32, comment_id: i32, db: State<Db>) -> EndpointResult<JSON<Comment>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let comment = comments.filter(post_id.eq(id).and(comments::id.eq(&comment_id)))

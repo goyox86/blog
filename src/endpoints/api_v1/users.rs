@@ -13,25 +13,32 @@ use schema::users;
 use endpoint_error::EndpointResult;
 use endpoints::helpers::*;
 use endpoints::pagination::Pagination;
+use auth::Authentication;
 
 #[get("/users", format = "application/json")]
-fn index(db: State<Db>) -> EndpointResult<JSON<Value>> {
+fn index(auth: Authentication, db: State<Db>) -> EndpointResult<JSON<Value>> {
+    auth.authenticate(&db)?;
+
     let results = all_users(&db, None)?;
 
     Ok(JSON(json!(results)))
 }
 
 #[get("/users?<pagination>", format = "application/json")]
-fn index_paginated(db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+fn index_paginated(auth: Authentication, db: State<Db>, pagination: Pagination) -> EndpointResult<JSON<Value>> {
+    auth.authenticate(&db)?;
+
     let results = all_users(&db, Some(pagination))?;
 
     Ok(JSON(json!(results)))
 }
 
 #[post("/users", data = "<new_user>", format = "application/json")]
-fn create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
+fn create(auth: Authentication, db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
-  
+
     let user = diesel::insert(&new_user.0).into(users::table)
         .get_result::<User>(conn)?;
 
@@ -39,7 +46,9 @@ fn create(db: State<Db>, new_user: JSON<NewUser>) -> EndpointResult<JSON<User>> 
 }
 
 #[get("/users/<user_id>", format = "application/json")]
-fn show(user_id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
+fn show(auth: Authentication, user_id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let user = users.find(user_id).first::<User>(conn)?;
@@ -48,7 +57,9 @@ fn show(user_id: i32, db: State<Db>) -> EndpointResult<JSON<User>> {
 }
 
 #[put("/users/<user_id>", data = "<updated_user>", format = "application/json")]
-fn update(db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<JSON<User>> {
+fn update(auth: Authentication, db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUser>) -> EndpointResult<JSON<User>> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     let user = diesel::update(users.find(user_id)).set(&updated_user.0)
@@ -58,7 +69,9 @@ fn update(db: State<Db>, user_id: i32, updated_user: JSON<UpdatedUser>) -> Endpo
 }
 
 #[delete("/users/<user_id>", format = "application/json")]
-fn destroy(user_id: i32, db: State<Db>) -> EndpointResult<Response> {
+fn destroy(auth: Authentication, user_id: i32, db: State<Db>) -> EndpointResult<Response> {
+    auth.authenticate(&db)?;
+
     let conn = &*db.pool().get()?;
 
     diesel::delete(users.find(user_id)).get_result::<User>(conn)?;
